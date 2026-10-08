@@ -77,3 +77,10 @@ it('rejects a task pack belonging to a different opportunity', async () => {
   const pack = await db.query<{id:string}>("insert into taskpacks(opportunity_id,name) values ($1,'Pack') returning id", [opp]);
   await expect(db.query("insert into tasks(opportunity_id,task_pack_id,title) values ($1,$2,'Wrong pack')", [other.rows[0].id,pack.rows[0].id])).rejects.toThrow(/foreign key/);
 });
+it('allows only one writer using the same quote version', async () => {
+  const created = await db.query<{id:string}>(`insert into quotes(opportunity_id,quote_number,title,line_items) values ($1,'Q-lock','Quote','[{"description":"Work","quantity":1,"unitPrice":10}]') returning id`, [opp]);
+  const id = created.rows[0].id;
+  expect((await db.query("update quotes set title='First' where id=$1 and version=1 returning id", [id])).rows).toHaveLength(1);
+  expect((await db.query("update quotes set title='Stale' where id=$1 and version=1 returning id", [id])).rows).toHaveLength(0);
+  expect((await db.query<{title:string}>('select title from quotes where id=$1', [id])).rows[0].title).toBe('First');
+});

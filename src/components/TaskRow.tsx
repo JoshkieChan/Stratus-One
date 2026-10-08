@@ -25,7 +25,7 @@ export function TaskRow({ title, dueTime, status, checked = false, onCheck }: Ta
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-white rounded-lg border border-[#E8EAED] hover:border-[#0057FF]/30 transition-colors">
+    <div className="flex items-center gap-4 p-4 bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border-default)] hover:border-[#0057FF]/30 transition-colors">
       <input
         type="checkbox"
         aria-label={`Complete ${title}`}
@@ -35,12 +35,12 @@ export function TaskRow({ title, dueTime, status, checked = false, onCheck }: Ta
       />
 
       <div className="flex-1">
-        <p className={`${checked ? 'line-through text-[#6A6D72]' : 'text-[#0A0A0A]'}`}>
+        <p className={`${checked ? 'line-through text-[var(--color-fg-secondary)]' : 'text-[var(--color-fg-primary)]'}`}>
           {title}
         </p>
       </div>
 
-      <div className="flex items-center gap-2 text-[#6A6D72]">
+      <div className="flex items-center gap-2 text-[var(--color-fg-secondary)]">
         <Clock className="w-4 h-4" />
         <span className="text-sm">{dueTime}</span>
       </div>

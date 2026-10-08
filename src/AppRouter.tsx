@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useWorkspaceRoute } from './hooks/useWorkspaceRoute';
 import { useAuth } from "./hooks/useAuth";
 import { AuthProvider } from './hooks/AuthProvider';
 import {
@@ -26,16 +27,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-type PageRoute =
-  | "dashboard"
-  | "feed"
-  | "taskpack"
-  | "quotegen"
-  | "email"
-  | "pipeline"
-  | "profile"
-  | "settings"
-  | "planner";
 
 export default function AppRouter() {
   return <AuthProvider><AuthenticatedWorkspace /></AuthProvider>;
@@ -50,9 +41,7 @@ function AuthenticatedWorkspace() {
 
 function Workspace() {
   const { user, loading } = useAuth();
-  const [activePage, setActivePage] =
-    useState<PageRoute>("dashboard");
-  const [selectedId, setSelectedId] = useState<string>();
+  const { page: activePage, opportunityId: selectedId, navigate: setActivePage } = useWorkspaceRoute();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   if (loading) {
@@ -197,7 +186,7 @@ function Workspace() {
         {/* Page Content */}
         <main className="flex-1 px-4 sm:px-8 py-6 sm:py-8 overflow-y-auto">
           {activePage === "dashboard" && <DashboardPage />}
-          {activePage === "feed" && <OpportunityFeedPage onSelect={id => { setSelectedId(id); setActivePage('taskpack'); }} />}
+          {activePage === "feed" && <OpportunityFeedPage onSelect={id => { setActivePage('taskpack', id); }} />}
           {activePage === "taskpack" && <TaskPackPage key={selectedId} opportunityId={selectedId} />}
           {activePage === "quotegen" && <QuoteGeneratorPage key={selectedId} opportunityId={selectedId} />}
           {activePage === "pipeline" && <PipelineBoardPage />}

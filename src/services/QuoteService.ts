@@ -1,3 +1,4 @@
+import type { Database } from '../types/database';
 import { calculateQuote } from '../domain/quotes';
 import { requireTitle, requireId } from '../domain/validation';
 import { toRow, fromRow } from './mapping';
@@ -55,13 +56,15 @@ export class QuoteService {
     return fromRow<Quote>(data);
   }
 
-  static async update(id: string, input: QuoteUpdateInput): Promise<Quote> {
+  static async update(id: string, input: QuoteUpdateInput, expectedVersion: number): Promise<Quote> {
+    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 1) throw new Error('A valid quote version is required');
     if (input.title !== undefined) requireTitle(input.title);
     if (input.opportunityId !== undefined) requireId(input.opportunityId);
-    const updateData: Record<string, unknown> = toRow(input);
+    const updateData: Database['public']['Tables']['quotes']['Update'] = toRow(input);
     if (input.lineItems !== undefined || input.taxRate !== undefined) {
       const existing = await this.getById(id);
       if (!existing) throw new Error('Quote not found');
+      if (existing.version !== expectedVersion) throw new Error('Quote changed. Reload it before saving your edits.');
       const items = input.lineItems ?? existing.lineItems;
       if (!items.length) throw new Error('A saved quote requires at least one line item');
       const taxRate = input.taxRate ?? existing.taxRate;
@@ -73,10 +76,12 @@ export class QuoteService {
       .from('quotes')
       .update(updateData)
       .eq('id', id)
+      .eq('version', expectedVersion)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error('Quote changed or is no longer accessible. Reload it before saving your edits.');
     return fromRow<Quote>(data);
   }
 

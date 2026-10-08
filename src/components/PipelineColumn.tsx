@@ -26,9 +26,9 @@ export function PipelineColumn({ title, count, opportunities, color = '#0057FF',
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <h3 className="text-[#1E1F22]">{title}</h3>
+          <h3 className="text-[var(--color-fg-primary)]">{title}</h3>
         </div>
-        <span className="text-sm text-[#6A6D72] bg-[#E8EAED] px-2 py-1 rounded-full">
+        <span className="text-sm text-[var(--color-fg-secondary)] bg-[#E8EAED] px-2 py-1 rounded-full">
           {count}
         </span>
       </div>
@@ -40,7 +40,7 @@ export function PipelineColumn({ title, count, opportunities, color = '#0057FF',
 
               <div className="flex-1">
                 <p className="text-sm mb-1">{opp.title}</p>
-                <p className="text-sm text-[#6A6D72]">{opp.value}</p>
+                <p className="text-sm text-[var(--color-fg-secondary)]">{opp.value}</p>
                 {onStatusChange && <select className="mt-3 w-full bg-[var(--color-bg-primary)]" aria-label={`Stage for ${opp.title}`} value={opp.status} disabled={pendingId !== undefined} onChange={event => onStatusChange(opp.id, event.target.value as Opportunity['status'])}>
                   {(['open', 'in_progress', 'submitted', 'won', 'lost', 'closed'] as const).map(status => <option key={status} value={status}>{status.replace('_', ' ')}</option>)}
                 </select>}

@@ -22,7 +22,7 @@ Reviewed entry points, feature screens, shared components/UI primitives, domain 
 
 The `components/ui` library is intentionally retained even where primitives are not yet consumed. It is typechecked/linted and unused modules are tree-shaken. Large generic sidebar and design-token reference components remain because splitting by line count would not clarify application logic. The original gallery contains illustrative controls, not working external integrations.
 
-Open work: hosted backend deployment and end-to-end verification ([setup](BACKEND.md)); generated database types; server PDF delivery; profile/notification persistence; email/planner/identity features; consistent dark styling in older examples; pagination. Navigation uses local state, records lack deep links, selected opportunity resets on reload and quote drafts are not autosaved. Authentication now has one shared provider; the workspace resets when the signed-in user changes.
+Open work: hosted backend deployment and end-to-end verification ([setup](BACKEND.md)); server PDF delivery; notification delivery; email/planner/identity features; consistent dark styling in older examples. URL hashes now preserve page/record selection, the feed has server-side pagination, dashboard/pipeline queries traverse API pages, and quote edits use optimistic versions. Unsaved quote drafts are not autosaved. Authentication now has one shared provider; the workspace resets when the signed-in user changes.
 
 Vitest verifies real business calculations and React interactions with mocked Supabase service/handler responses. Embedded Postgres tests execute the migration and verify ownership isolation on all four tables; hosted authorization remains unverified. Node typechecking covers application source; the separate Deno check covers function entry points and shared handlers. The pushed branch passed hosted GitHub Actions: [quality checks](https://github.com/JoshkieChan/Stratus-One/actions/runs/37732952385).
 
@@ -37,15 +37,17 @@ Node 24.19.0 / npm 11.6.2 on Windows:
 | Clean `npm ci` | Passed |
 | `npm run lint` | Passed, zero warnings |
 | `npm run typecheck` | Passed |
-| `npm test` | 69 tests passed across 9 files |
+| `npm test` | 80 tests passed across 12 files |
 | `npm run build` | Passed; separate showcase/application bundles |
 | `npm audit --audit-level=moderate` | Zero vulnerabilities |
 | Deno check, both function entry points | Passed, including shared handlers |
 | Production HTTP smoke test | HTTP 200, expected Stratus One document title |
-| Interactive browser smoke test | Not verified: browser could not reach the preview through its environment |
+| Interactive browser smoke test | 3 Chromium scenarios passed locally: showcase/theme, auth/deep links, navigation/write failures/quote conflicts/print layout |
 | Live Supabase and RLS | Embedded Postgres/RLS passed; hosted project not verified |
 | Hosted GitHub Actions | Passed on commit f9720a1: frontend and Edge Function jobs |
 
 Supabase JS is pinned to 2.117.2, a release old enough to satisfy Deno's default dependency-age policy. No dependency-age protection was disabled. Test execution used the host environment because sandboxed Windows workers could not reliably read temporary transformed modules. This is an execution-environment limitation, not a skipped test suite.
 
 Follow-up hardening added a versioned schema, owner policies and composite foreign keys, authoritative quote/completion triggers, creation forms, task-pack creation, pipeline stage updates, browser quote printing, saved-quote readback, a shared auth provider and a single owner-scoped dashboard task query.
+
+Follow-up validation adds migration-generated database types with CI drift detection, Chromium regression tests, deep-link/back-forward tests, pagination/error tests, stale-quote version tests and profile-save success/failure tests. Supabase deployment is intentionally pending at the user's request. Previous hosted CI evidence above predates this follow-up; consult the latest Actions run for its status.

@@ -1,56 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { OpportunityService } from '../../services/OpportunityService';
 import { OpportunityCard } from '../OpportunityCard';
 import { OpportunityForm } from '../OpportunityForm';
 import { StratusButton } from '../StratusButton';
 import { Plus, Search } from 'lucide-react';
-import type { Opportunity } from '../../types/opportunity';
+import { useResource } from '../../hooks/useResource';
 
 export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => void }) {
   const { user } = useAuth();
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadOpportunities();
-    }
-  }, [user]);
-
-  const loadOpportunities = async () => {
-    setError(null);
-    try {
-      const data = await OpportunityService.getAll(user!.id);
-      setOpportunities(data);
-    } catch {
-      setError('Unable to load or save data. Check your connection and backend configuration, then reload.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredOpportunities = opportunities.filter(opp => {
-    const matchesSearch = opp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         opp.agency.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || opp.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
-
-  if (error) return <p role="alert">{error}</p>;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-[var(--color-fg-secondary)]">Loading opportunities...</p>
-      </div>
-    );
-  }
-
+  const [page, setPage] = useState(0);
+  const load = useCallback(() => OpportunityService.getPage(user!.id, page, searchQuery, filterStatus), [user, page, searchQuery, filterStatus]);
+  const resource = useResource(load);
+  const filteredOpportunities = resource.data?.items ?? [];
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -58,7 +24,7 @@ export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => vo
         <div>
           <h1 className="mb-2">Opportunity Feed</h1>
           <p className="text-[var(--color-fg-secondary)]">
-            {filteredOpportunities.length} opportunities found
+            {resource.data?.total ?? 0} opportunities found
           </p>
         </div>
         <StratusButton variant="primary" onClick={() => setCreating(true)}>
@@ -67,7 +33,7 @@ export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => vo
         </StratusButton>
       </div>
 
-      {creating && user && <OpportunityForm userId={user.id} onCancel={() => setCreating(false)} onCreated={opportunity => { setOpportunities(previous => [opportunity, ...previous]); setCreating(false); }} />}
+      {creating && user && <OpportunityForm userId={user.id} onCancel={() => setCreating(false)} onCreated={() => { setPage(0); resource.refresh(); setCreating(false); }} />}
       {/* Search and Filter Bar */}
       <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[200px]">
@@ -78,7 +44,7 @@ export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => vo
               placeholder="Search opportunities..."
               aria-label="Search opportunities"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }}
               className="w-full h-[var(--input-height)] pl-10 pr-4 rounded-[var(--radius-m)] border border-[var(--color-border-strong)] bg-[var(--color-bg-primary)] text-[var(--color-fg-primary)] placeholder:text-[var(--color-fg-tertiary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-accent-primary)]/20 transition-all"
             />
           </div>
@@ -87,7 +53,7 @@ export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => vo
         <select
           aria-label="Filter by status"
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
+          onChange={(e) => { setFilterStatus(e.target.value); setPage(0); }}
           className="h-[var(--input-height)] px-4 rounded-[var(--radius-m)] border border-[var(--color-border-strong)] bg-[var(--color-bg-primary)] text-[var(--color-fg-primary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-accent-primary)]/20 transition-all"
         >
           <option value="all">All Status</option>
@@ -100,8 +66,13 @@ export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => vo
         </select>
       </div>
 
+      <nav aria-label="Opportunity pages" className="flex items-center gap-4">
+        <StratusButton disabled={page === 0 || resource.loading} onClick={() => setPage(value => value - 1)}>Previous</StratusButton>
+        <span>Page {page + 1}</span>
+        <StratusButton disabled={resource.loading || !resource.data || (page + 1) * resource.data.pageSize >= resource.data.total} onClick={() => setPage(value => value + 1)}>Next</StratusButton>
+      </nav>
       {/* Opportunities Grid */}
-      {filteredOpportunities.length === 0 ? (
+      {resource.loading ? <p role="status">Loading opportunities…</p> : resource.error ? <p role="alert">{resource.error} <button onClick={resource.refresh}>Retry</button></p> : filteredOpportunities.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-[var(--color-fg-secondary)]">No opportunities found</p>
         </div>

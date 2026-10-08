@@ -30,7 +30,7 @@ export function QuoteGenerator() {
           />
 
           <div className="flex flex-col gap-2">
-            <label htmlFor="quote-markup" className="text-sm text-[#1E1F22]">Markup (%)</label>
+            <label htmlFor="quote-markup" className="text-sm text-[var(--color-fg-primary)]">Markup (%)</label>
             <div className="flex items-center gap-4">
               <input
                 type="range"
@@ -54,22 +54,22 @@ export function QuoteGenerator() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="bg-[#F7F9FA] rounded-lg p-6 border-2 border-[#E8EAED]">
+          <div className="bg-[var(--color-bg-secondary)] rounded-lg p-6 border-2 border-[var(--color-border-default)]">
             <h3 className="mb-4">Summary</h3>
 
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center">
-                <span className="text-[#6A6D72]">Base Cost</span>
+                <span className="text-[var(--color-fg-secondary)]">Base Cost</span>
                 <span className="font-mono">${baseCost}</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-[#6A6D72]">Markup</span>
+                <span className="text-[var(--color-fg-secondary)]">Markup</span>
                 <span className="font-mono">{markup}%</span>
               </div>
 
               <div className="flex justify-between items-center">
-                <span className="text-[#6A6D72]">Profit</span>
+                <span className="text-[var(--color-fg-secondary)]">Profit</span>
                 <span className="font-mono text-[#27AE60]">${quote.profit.toFixed(2)}</span>
               </div>
 

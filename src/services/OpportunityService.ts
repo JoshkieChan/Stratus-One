@@ -1,18 +1,27 @@
+import { collectPages } from './pagination';
 import { toRow, fromRow } from './mapping';
 import { requireTitle, validateOpportunity } from '../domain/validation';
 import { supabase } from '../lib/supabaseClient';
 import type { Opportunity, OpportunityCreateInput, OpportunityUpdateInput } from '../types/opportunity';
 
 export class OpportunityService {
-  static async getAll(userId: string): Promise<Opportunity[]> {
-    const { data, error } = await supabase
-      .from('opportunities')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
+  static async getPage(userId: string, page = 0, search = '', status = 'all') {
+    if (!Number.isSafeInteger(page) || page < 0) throw new Error('Invalid page');
+    const pageSize = 24;
+    let query = supabase.from('opportunities').select('*', { count: 'exact' }).eq('user_id', userId);
+    if (status !== 'all') query = query.eq('status', status);
+    if (search.trim()) {
+      // Quote PostgREST filter values and escape SQL wildcard characters.
+      const literal = search.trim().replace(/[\\%_]/g, '\\$&').replace(/"/g, '\\"');
+      query = query.or(`title.ilike."%${literal}%",agency.ilike."%${literal}%"`);
+    }
+    const { data, error, count } = await query.order('created_at', { ascending: false }).order('id').range(page * pageSize, (page + 1) * pageSize - 1);
     if (error) throw error;
-    return (data || []).map(row => fromRow<Opportunity>(row));
+    return { items: (data || []).map(row => fromRow<Opportunity>(row)), total: count ?? 0, pageSize };
+  }
+  static async getAll(userId: string): Promise<Opportunity[]> {
+    const data = await collectPages((from, to) => supabase.from('opportunities').select('*').eq('user_id', userId).order('created_at', { ascending: false }).order('id').range(from, to));
+    return data.map(row => fromRow<Opportunity>(row));
   }
 
   static async getById(id: string): Promise<Opportunity | null> {

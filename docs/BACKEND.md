@@ -24,9 +24,9 @@ The browser's URL and publishable/legacy anon key are public. Never put service-
 
 `supabase/migrations/20261008052056_initial_workflows.sql` defines opportunities, taskpacks, tasks and quotes. All four tables enable RLS, deny anonymous access, and restrict reads/inserts/updates/deletes to `user_id = auth.uid()`. Ownership defaults to the authenticated user. Composite foreign keys prevent referencing another user's opportunity and prevent linking a task to a pack from a different opportunity. Identity and ownership cannot be reassigned.
 
-Postgres triggers own modification timestamps and task completion timestamps. Quote triggers validate line items, recompute line totals and tax using Postgres numeric arithmetic, and increment a version on each update. Browser calculations are estimates; persisted totals are authoritative. Version metadata is available, but the current update service does not implement conflict resolution. Concurrent edits must be avoided until optimistic concurrency is added.
+Postgres triggers own modification timestamps and task completion timestamps. Quote triggers validate line items, recompute line totals and tax using Postgres numeric arithmetic, and increment a version on each update. Browser calculations are estimates; persisted totals are authoritative. Quote updates require the version originally loaded by the editor. The update filters by ID and version atomically; stale or inaccessible records produce an explicit conflict instead of overwriting newer data. The editor retains unsaved input and refreshes the saved-record list so the user can reload a newer version.
 
-Domain types are camelCase and database columns are snake_case. The adapter maps only top-level fields; `line_items` JSON remains camelCase. Generated database types and runtime validation of every returned row remain follow-up work.
+Domain types are camelCase and database columns are snake_case. The adapter maps only top-level fields; `line_items` JSON remains camelCase. The Supabase client uses database types generated from the committed migrations by `npm run db:types`. CI checks for drift. This generation runs embedded Postgres with a minimal auth schema, so it covers application tables, not every hosted Supabase schema. Runtime validation of every returned row remains follow-up work.
 
 ## Functions
 
@@ -43,3 +43,5 @@ Embedded Postgres tests execute the actual migration using PGlite. They exercise
 Before using real data, verify the complete flow on the target project with two accounts, including invalid/expired tokens, direct unauthorized requests and saved-record reloads. Browser print supports a user-selected PDF destination; there is no server PDF generation or delivery service. Quotes are estimates, not an accounting product. Delete adapters cannot distinguish missing rows from inaccessible rows. No ingestion, email sending, notification delivery or external integrations are implemented.
 
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function authorization](https://supabase.com/docs/guides/functions/auth).
+
+Profile updates store only display name and organization in Auth user metadata; these values are never used for authorization. Chromium tests intercept API calls with explicit fixtures, while embedded Postgres separately verifies database behavior. Hosted deployment remains pending at the user's request.

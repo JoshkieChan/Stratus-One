@@ -1,3 +1,4 @@
+import { collectPages } from './pagination';
 import { toRow, fromRow } from './mapping';
 import { requireTitle } from '../domain/validation';
 import { supabase } from '../lib/supabaseClient';
@@ -5,9 +6,8 @@ import type { Task, TaskPack, TaskCreateInput, TaskUpdateInput } from '../types/
 
 export class TaskService {
   static async getAll(userId: string): Promise<Task[]> {
-    const { data, error } = await supabase.from('tasks').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-    if (error) throw error;
-    return (data || []).map(row => fromRow<Task>(row));
+    const data = await collectPages((from, to) => supabase.from('tasks').select('*').eq('user_id', userId).order('created_at', { ascending: false }).order('id').range(from, to));
+    return data.map(row => fromRow<Task>(row));
   }
   static async getByOpportunity(opportunityId: string): Promise<Task[]> {
     const { data, error } = await supabase

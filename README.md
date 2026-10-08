@@ -31,12 +31,12 @@ Restart Vite after changes. These values are public in the browser bundle: **nev
 | --- | --- |
 | Design system | Gallery, semantic tokens, reusable cards/buttons/inputs/badges, themes and sample product layouts |
 | Authentication | Supabase email/password sign-in/sign-up, confirmation guidance and sign-out |
-| Opportunities | User-scoped reads, search/status filters, record selection, creation form and CRUD service methods |
+| Opportunities | User-scoped reads, server-side search/status filters and pagination, record selection, creation form and CRUD service methods |
 | Task packs | Create packs and tasks for a selected opportunity; complete/reopen tasks |
-| Quotes | Add/remove/edit lines, cent-rounded totals, tax, notes and draft save/readback for a selected opportunity; browser print / Save PDF |
+| Quotes | Add/remove/edit lines, cent-rounded totals, tax, notes and draft creation/editing with version conflict protection; browser print / Save PDF |
 | Pipeline | Six stages with persisted stage selectors and visible write failures |
 | Winnability | Tested deterministic prioritization heuristic and authenticated function with a recalculation control; not predictive or eligibility-verified |
-| Settings | Theme/sign-out work; profile, notifications and account management are visibly unavailable |
+| Settings | Profile name/organization, theme and sign-out work; notification delivery and account administration remain planned |
 | Email, planner, identity | Showcase layouts or explicitly planned application pages |
 
 With a provisioned backend: sign in → create an opportunity → select it → create a task pack and tasks → complete tasks → save a quote → update the pipeline stage. No automatic feed ingestion exists.
@@ -65,7 +65,7 @@ supabase/
 
 Screens own interactions and loading/error states. Services own database calls and snake_case ↔ camelCase mapping. Pure domain functions own calculations and scoring. Shared UI preserves the existing design language. Tailwind compiles from token source, and showcase/app bundles load independently.
 
-Navigation stays lightweight: local React state selects application pages, while query parameters select the entry mode. Records are not deep-linkable. UI primitives remain as a reusable library even where a feature does not consume them.
+Navigation stays lightweight: query parameters select the entry mode and URL hashes preserve workspace pages and selected opportunity IDs across reloads and browser Back/Forward. Invalid routes fall back to the dashboard. UI primitives remain as a reusable library even where a feature does not consume them.
 
 ## Stack
 
@@ -75,21 +75,24 @@ React 18, strict TypeScript, Vite with the React Babel plugin, Tailwind CSS 4, R
 
 ```sh
 npm run lint
+npm run db:types:check
 npm run typecheck
 npm test
 npm run build
 npm audit --audit-level=moderate
+npx playwright install chromium
+npm run test:e2e
 ```
 
 `npm run check` runs lint, typecheck, tests and build. `npm run test:watch` supports development; `npm run preview` serves the production `build/` directory.
 
-Tests cover rounding/invalid values, quote updates, mapping/server failures, task completion, scoring boundaries, handler authorization/validation/write failures, entry modes and rendered component behavior. Service responses are mocked; PGlite runs the actual SQL migration and checks ownership isolation, constraints and server calculations in embedded Postgres. Hosted Auth/Data API integration remains unverified. Deno bootstrap validation is separate from browser typechecking.
+Tests cover rounding/invalid values, quote updates, mapping/server failures, task completion, scoring boundaries, handler authorization/validation/write failures, entry modes and rendered component behavior. Service responses are mocked; PGlite runs the actual SQL migration and checks ownership isolation, constraints and server calculations in embedded Postgres. Chromium tests exercise navigation, session fixtures, themes, quote conflict recovery and print layout. Hosted Auth/Data API integration remains unverified. Deno bootstrap validation is separate from browser typechecking.
 
-[GitHub Actions](.github/workflows/ci.yml) runs `npm ci`, lint, strict typecheck, tests, build and dependency audit on pushes and pull requests. A separate Deno job typechecks both Edge Function entry points. A hosted run is not implied by workflow presence.
+[GitHub Actions](.github/workflows/ci.yml) runs `npm ci`, lint, strict typecheck, tests, build and dependency audit on pushes and pull requests. The frontend job also verifies generated schema types and runs Chromium browser tests. A separate Deno job typechecks both Edge Function entry points.
 
 ## Project limitations
 
-The next milestone is deployment and browser verification against a real Supabase project, plus generated database types. Remaining gaps include deep links, pagination, server PDF delivery, profile/notification persistence and consistent dark styling in older samples. Quotes are estimates, not an accounting system, and concurrent edits are not resolved.
+Hosted deployment remains pending by choice. Browser tests use explicit API fixtures and do not claim a live Supabase integration check. Future product features include server PDF delivery, notification delivery, email/planner/identity workflows and further visual polish in older showcase samples. Quotes are estimates, not an accounting system, with optimistic concurrency protecting saved edits. Unsaved drafts are not automatically persisted.
 
 Read [the audit](docs/AUDIT.md) and [backend review](docs/BACKEND.md) for findings, security assumptions, function deployment details and acceptance criteria.
 
@@ -102,3 +105,5 @@ Suggested résumé description: “Refactored a React/TypeScript opportunity-wor
 ## Attribution
 
 The visual foundation originated in a Figma component-library export. Original provenance and third-party license links are preserved in [Attributions](src/Attributions.md).
+
+Database types are generated reproducibly from committed migrations using embedded Postgres: run `npm run db:types` after a schema change. CI checks for drift. Dashboard and pipeline reads traverse API pages; the opportunity feed requests 24 records per page. Large-scale analytics and virtualization remain outside this portfolio scope.

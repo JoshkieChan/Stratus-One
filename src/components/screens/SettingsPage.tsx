@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { StratusButton } from '../StratusButton';
 import { StratusCard } from '../StratusCard';
-import { StratusInput } from '../StratusInput';
+import { ProfileForm } from '../ProfileForm';
 import { ThemeToggle } from '../ThemeToggle';
-import { User, Bell, Shield, Database, LogOut } from 'lucide-react';
+import { Bell, Shield, Database, LogOut } from 'lucide-react';
 
 export function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,41 +33,8 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <p role="status">{error || 'Only theme and sign-out are available. Profile edits, notifications, security management and data export are planned.'}</p>
-      <fieldset disabled>
-      {/* Profile Settings */}
-      <StratusCard>
-        <div className="flex items-center gap-3 mb-6">
-          <User className="w-5 h-5 text-[var(--color-accent-primary)]" />
-          <h3>Profile Settings</h3>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <StratusInput
-            label="Email"
-            type="email"
-            value={user?.email || ''}
-            disabled
-          />
-
-          <StratusInput
-            label="Full Name"
-            placeholder="John Doe"
-          />
-
-          <StratusInput
-            label="Organization"
-            placeholder="Your Company Name"
-          />
-
-          <div className="flex gap-3 mt-2">
-            <StratusButton variant="primary">Save Changes</StratusButton>
-            <StratusButton variant="ghost">Cancel</StratusButton>
-          </div>
-        </div>
-      </StratusCard>
-
-      </fieldset>
+      <p role="status">{error || 'Profile, theme and sign-out are available. Notifications, security management and data export are planned.'}</p>
+      <ProfileForm />
       {/* Appearance */}
       <StratusCard>
         <div className="flex items-center gap-3 mb-6">

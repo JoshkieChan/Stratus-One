@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from 'vitest';
 const { query, client, responses } = vi.hoisted(() => {
   const responses: { data: unknown; error: unknown }[] = [];
   const query: Record<string, ReturnType<typeof vi.fn>> = {};
-  for (const key of ['select','eq','order','insert','update','delete','single','maybeSingle']) query[key] = vi.fn(() => query);
+  for (const key of ['select','eq','order','insert','update','delete','single','maybeSingle','range','or']) query[key] = vi.fn(() => query);
   query.then = vi.fn((resolve) => Promise.resolve(responses.shift() ?? { data: null, error: null }).then(resolve));
   return { responses, query, client: { from: vi.fn(() => query), functions: { invoke: vi.fn() } } };
 });
@@ -28,13 +28,13 @@ it('recomputes caller-supplied quote totals and serializes database columns', as
   expect(query.insert).toHaveBeenCalledWith([expect.objectContaining({ opportunity_id: id, subtotal: 20, tax_rate: 0.1, tax_amount: 2, total: 22, line_items: [expect.objectContaining({ total: 20 })] })]);
 });
 it('recalculates tax-only edits from existing lines', async () => {
-  responses.push({ data: { line_items: [{ quantity: 2, unitPrice: 10 }], tax_rate: 0.1 }, error: null }, { data: { id }, error: null });
-  await QuoteService.update(id, { taxRate: 0.2 });
+  responses.push({ data: { version: 1, line_items: [{ quantity: 2, unitPrice: 10 }], tax_rate: 0.1 }, error: null }, { data: { id }, error: null });
+  await QuoteService.update(id, { taxRate: 0.2 }, 1);
   expect(query.update).toHaveBeenCalledWith(expect.objectContaining({ subtotal: 20, total: 24, tax_amount: 4 }));
 });
 it('preserves existing tax on line-only edits', async () => {
-  responses.push({ data: { line_items: [], tax_rate: 0.1 }, error: null }, { data: { id }, error: null });
-  await QuoteService.update(id, { lineItems: [{ description: 'Work', quantity: 1, unitPrice: 10, total: 0 }] });
+  responses.push({ data: { version: 1, line_items: [], tax_rate: 0.1 }, error: null }, { data: { id }, error: null });
+  await QuoteService.update(id, { lineItems: [{ description: 'Work', quantity: 1, unitPrice: 10, total: 0 }] }, 1);
   expect(query.update).toHaveBeenCalledWith(expect.objectContaining({ total: 11, tax_rate: 0.1 }));
 });
 it('rejects invalid quotes before writing and does not fake PDF generation', async () => {
@@ -63,4 +63,28 @@ it('rejects invalid opportunity edits and empty task names before writing', asyn
   await expect(TaskService.createTaskPack(id, ' ')).rejects.toThrow();
   expect(query.update).not.toHaveBeenCalled();
   expect(query.insert).not.toHaveBeenCalled();
+});
+
+it('refuses stale quote versions before overwriting newer calculations', async () => {
+  responses.push({ data: { version: 2 }, error: null });
+  await expect(QuoteService.update(id, { taxRate: 0.1 }, 1)).rejects.toThrow('Quote changed');
+  expect(query.update).not.toHaveBeenCalled();
+});
+it('guards the write atomically and reports a concurrent change', async () => {
+  responses.push({ data: null, error: null });
+  await expect(QuoteService.update(id, { title: 'Edited' }, 1)).rejects.toThrow('Quote changed');
+  expect(query.eq).toHaveBeenCalledWith('version', 1);
+});
+
+it('paginates with deterministic ordering and safely quoted search filters', async () => {
+  responses.push({ data: [], error: null });
+  await OpportunityService.getPage(id, 2, 'Bid, "quoted"_%', 'open');
+  expect(query.range).toHaveBeenCalledWith(48, 71);
+  expect(query.eq).toHaveBeenCalledWith('status', 'open');
+  expect(query.order).toHaveBeenCalledWith('id');
+  expect(query.or).toHaveBeenCalledWith('title.ilike."%Bid, \\"quoted\\"\\_\\%%",agency.ilike."%Bid, \\"quoted\\"\\_\\%%"'.replaceAll('\\\\"', '\\"'));
+});
+it('rejects invalid page numbers without querying Supabase', async () => {
+  await expect(OpportunityService.getPage(id, -1)).rejects.toThrow('Invalid page');
+  expect(client.from).not.toHaveBeenCalled();
 });

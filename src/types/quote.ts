@@ -7,6 +7,7 @@ export interface QuoteLineItem {
 }
 
 export interface Quote {
+  version: number;
   id: string;
   opportunityId: string;
   userId: string;

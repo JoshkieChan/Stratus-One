@@ -31,7 +31,7 @@ export function OpportunityCard({
         </StratusBadge>
       </div>
 
-      <div className="flex items-center gap-4 text-[#6A6D72]">
+      <div className="flex items-center gap-4 text-[var(--color-fg-secondary)]">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
           <span className="text-sm">{deadline}</span>
@@ -42,9 +42,9 @@ export function OpportunityCard({
         </div>
       </div>
 
-      <div className="bg-[#F7F9FA] rounded-lg p-4">
-        <p className="text-sm text-[#1E1F22] mb-1">Priority assessment</p>
-        <p className="text-sm text-[#6A6D72]">{reasoning}</p>
+      <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4">
+        <p className="text-sm text-[var(--color-fg-primary)] mb-1">Priority assessment</p>
+        <p className="text-sm text-[var(--color-fg-secondary)]">{reasoning}</p>
       </div>
 
       <StratusButton variant="primary" fullWidth onClick={onClick} disabled={!onClick}>

@@ -9,7 +9,7 @@ import { StratusCard } from '../StratusCard';
 import { StratusInput } from '../StratusInput';
 import { Plus, Download, Send } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
-import type { QuoteLineItem } from '../../types/quote';
+import type { Quote, QuoteLineItem } from '../../types/quote';
 
 export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }) {
   const { user } = useAuth();
@@ -21,6 +21,12 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState<Quote>();
+  function editQuote(quote: Quote) {
+    setEditing(quote); setQuoteTitle(quote.title); setTaxRate(quote.taxRate * 100);
+    setNotes(quote.notes ?? ''); setMessage('');
+    setLineItems(quote.lineItems.map(item => ({ ...item, id: crypto.randomUUID() })));
+  }
   const loadQuotes = useCallback(() => opportunityId ? QuoteService.getByOpportunity(opportunityId) : Promise.resolve([]), [opportunityId]);
   const savedQuotes = useResource(loadQuotes);
 
@@ -64,16 +70,19 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
 
     setLoading(true);
     try {
-      await QuoteService.create(user.id, {
+      const input = {
         opportunityId,
         title: quoteTitle,
         lineItems: lineItems.map(({ id: _id, ...item }) => item),
         taxRate: taxRate / 100,
         notes,
-      });
+      };
+      const saved = editing ? await QuoteService.update(editing.id, input, editing.version) : await QuoteService.create(user.id, input);
+      editQuote(saved);
       setMessage('Quote saved successfully.');
       savedQuotes.refresh();
     } catch (error) {
+      savedQuotes.refresh();
       setMessage(error instanceof Error ? error.message : 'Failed to save quote');
     } finally {
       setLoading(false);
@@ -81,7 +90,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <fieldset disabled={loading} className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
@@ -108,9 +117,10 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
       {opportunityId && <StratusCard>
         <h3>Saved quotes for this opportunity</h3>
         {savedQuotes.loading ? <p role="status">Loading saved quotes…</p> : savedQuotes.error ? <p role="alert">{savedQuotes.error}</p> : savedQuotes.data?.length ? <ul>
-          {savedQuotes.data.map(quote => <li key={quote.id}>{quote.title} — {formatCurrency(quote.total)} ({quote.status})</li>)}
+          {savedQuotes.data.map(quote => <li key={quote.id}>{quote.title} — {formatCurrency(quote.total)} ({quote.status}) <StratusButton disabled={loading} variant="ghost" onClick={() => editQuote(quote)}>Edit {quote.title}</StratusButton></li>)}
         </ul> : <p>No saved quotes yet.</p>}
       </StratusCard>}
+      {editing && <p>Editing {editing.quoteNumber}, version {editing.version}. <StratusButton disabled={loading} variant="ghost" onClick={() => { setEditing(undefined); setQuoteTitle(''); setLineItems([{ id: crypto.randomUUID(), description: '', quantity: 1, unitPrice: 0, total: 0 }]); setNotes(''); setTaxRate(0); setMessage(''); }}>New quote</StratusButton></p>}
       <StratusCard>
         <h3 className="mb-4">Quote Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -223,6 +233,6 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
           className="w-full px-4 py-3 rounded-[var(--radius-m)] border border-[var(--color-border-strong)] bg-[var(--color-bg-primary)] text-[var(--color-fg-primary)] placeholder:text-[var(--color-fg-tertiary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-accent-primary)]/20 transition-all resize-none"
         />
       </StratusCard>
-    </div>
+    </fieldset>
   );
 }

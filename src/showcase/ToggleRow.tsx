@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 export function ToggleRow({ label, defaultChecked = false }: { label: string; defaultChecked?: boolean }) {
   const [checked, setChecked] = useState(defaultChecked);
-  
+
   return (
     <div className="flex items-center justify-between py-2">
       <span className="text-[#1E1F22]">{label}</span>

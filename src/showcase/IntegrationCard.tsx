@@ -3,7 +3,7 @@ import { StratusCard } from '../components/StratusCard';
 
 export function IntegrationCard({ name, status, icon }: { name: string; status: string; icon: string }) {
   const isConnected = status === 'Connected';
-  
+
   return (
     <StratusCard className={isConnected ? 'border-2 border-[#27AE60]' : ''}>
       <div className="flex items-center justify-between">

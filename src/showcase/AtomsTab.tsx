@@ -14,7 +14,7 @@ export function AtomsTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Buttons</h2>
         <p className="text-[#6A6D72] mb-6">All button variants and states</p>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Primary Button States */}
           <StratusCard>
@@ -106,7 +106,7 @@ export function AtomsTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Inputs</h2>
         <p className="text-[#6A6D72] mb-6">Input field variants and states</p>
-        
+
         <StratusCard>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
             <div>
@@ -115,8 +115,8 @@ export function AtomsTab() {
             </div>
             <div>
               <p className="text-sm text-[#6A6D72] mb-2">Filled</p>
-              <StratusInput 
-                value={filledInputValue} 
+              <StratusInput
+                value={filledInputValue}
                 onChange={(e) => setFilledInputValue(e.target.value)}
               />
             </div>
@@ -140,7 +140,7 @@ export function AtomsTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Badges</h2>
         <p className="text-[#6A6D72] mb-6">Status and category badges</p>
-        
+
         <StratusCard>
           <div className="flex flex-wrap items-center gap-3">
             <StratusBadge variant="winnable">Winnable (92%)</StratusBadge>
@@ -155,18 +155,18 @@ export function AtomsTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Cards</h2>
         <p className="text-[#6A6D72] mb-6">Card variants and states</p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StratusCard>
             <h3 className="mb-2">Default Card</h3>
             <p className="text-[#6A6D72]">Standard card with white background and subtle shadow.</p>
           </StratusCard>
-          
+
           <StratusCard onClick={() => {}}>
             <h3 className="mb-2">Hover Card</h3>
             <p className="text-[#6A6D72]">Hover to see elevated shadow effect.</p>
           </StratusCard>
-          
+
           <StratusCard className="border-2 border-[#0057FF] bg-[#0057FF]/5">
             <h3 className="mb-2">Selected Card</h3>
             <p className="text-[#6A6D72]">Active/selected state with border.</p>
@@ -178,7 +178,7 @@ export function AtomsTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Logo Concepts</h2>
         <p className="text-[#6A6D72] mb-6">Four logo variations for STRATUSONE OS</p>
-        
+
         <StratusCard>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="flex flex-col items-center gap-3">

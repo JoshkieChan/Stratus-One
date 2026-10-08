@@ -54,5 +54,3 @@ it('does not report successful sign-up when authentication rejects', async () =>
   expect(await screen.findByText('Sign-up unavailable')).toBeInTheDocument();
   expect(screen.queryByRole('status')).not.toBeInTheDocument();
 });
-
-

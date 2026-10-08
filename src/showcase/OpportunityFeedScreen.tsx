@@ -49,7 +49,7 @@ export function OpportunityFeedScreen() {
           ];
           const variant = variants[i % 3];
           const scores = [92, 68, 34];
-          
+
           return (
             <OpportunityCard
               key={i}

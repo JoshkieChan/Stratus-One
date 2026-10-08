@@ -102,4 +102,3 @@ Suggested résumé description: “Refactored a React/TypeScript opportunity-wor
 ## Attribution
 
 The visual foundation originated in a Figma component-library export. Original provenance and third-party license links are preserved in [Attributions](src/Attributions.md).
-

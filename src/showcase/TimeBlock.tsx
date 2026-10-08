@@ -22,7 +22,7 @@ export function TimeBlock({ period, time, tasks }: { period: string; time: strin
                 </p>
                 <p className="text-sm text-[#6A6D72] font-mono">{task.time}</p>
               </div>
-              <StratusBadge 
+              <StratusBadge
                 variant={
                   task.status === 'completed' ? 'winnable' :
                   task.status === 'in-progress' ? 'info' :

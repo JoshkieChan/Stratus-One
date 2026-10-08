@@ -58,7 +58,7 @@ export function IdentityProfileScreen() {
                     <span className="text-sm text-[#6A6D72] font-mono">{item.level}%</span>
                   </div>
                   <div className="h-2 bg-[#E8EAED] rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-[#0057FF] rounded-full transition-all"
                       style={{ width: `${item.level}%` }}
                     />
@@ -72,7 +72,7 @@ export function IdentityProfileScreen() {
             <h3 className="text-[#1E1F22] mb-4">Tools & Platforms</h3>
             <div className="flex flex-wrap gap-2">
               {[
-                'Salesforce', 'HubSpot', 'Zapier', 'PostgreSQL', 
+                'Salesforce', 'HubSpot', 'Zapier', 'PostgreSQL',
                 'React', 'Node.js', 'AWS', 'Docker',
                 'Git', 'Jira', 'Figma', 'Slack'
               ].map((tool) => (

@@ -49,4 +49,3 @@ Node 24.19.0 / npm 11.6.2 on Windows:
 Supabase JS is pinned to 2.117.2, a release old enough to satisfy Deno's default dependency-age policy. No dependency-age protection was disabled. Test execution used the host environment because sandboxed Windows workers could not reliably read temporary transformed modules. This is an execution-environment limitation, not a skipped test suite.
 
 Follow-up hardening added a versioned schema, owner policies and composite foreign keys, authoritative quote/completion triggers, creation forms, task-pack creation, pipeline stage updates, browser quote printing, saved-quote readback, a shared auth provider and a single owner-scoped dashboard task query.
-

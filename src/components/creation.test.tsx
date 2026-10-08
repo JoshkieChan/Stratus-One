@@ -48,4 +48,3 @@ it('retains the pipeline stage when a write fails', async () => {
   expect(await screen.findByRole('alert')).toHaveTextContent('previous stage');
   expect(screen.getByLabelText('Stage for Website contract')).toHaveValue('open');
 });
-

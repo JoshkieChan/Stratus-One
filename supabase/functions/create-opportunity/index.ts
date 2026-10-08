@@ -6,4 +6,3 @@ Deno.serve(createHandler('create', authorization => createClient(
   Deno.env.get('SUPABASE_ANON_KEY') ?? '',
   { global: { headers: { Authorization: authorization } }, auth: { persistSession: false } },
 )));
-

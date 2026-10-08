@@ -11,7 +11,7 @@ export function MoleculesTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Opportunity Card</h2>
         <p className="text-[#6A6D72] mb-6">Complex card component for displaying opportunities</p>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <OpportunityCard
             title="Enterprise CRM Implementation"
@@ -43,7 +43,7 @@ export function MoleculesTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Task Row</h2>
         <p className="text-[#6A6D72] mb-6">Interactive task list item with checkbox and status</p>
-        
+
         <div className="flex flex-col gap-3 max-w-4xl">
           <TaskRow
             title="Complete initial discovery call"
@@ -69,7 +69,7 @@ export function MoleculesTab() {
       <section>
         <h2 className="text-[#01204A] mb-2">Pipeline Column</h2>
         <p className="text-[#6A6D72] mb-6">Kanban-style column for pipeline management</p>
-        
+
         <div className="flex gap-6 overflow-x-auto pb-4">
           <PipelineColumn
             title="Qualified"

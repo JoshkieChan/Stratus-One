@@ -22,19 +22,19 @@ export function SettingsScreen() {
           <div>
             <h3 className="text-[#1E1F22] mb-4">Profile Settings</h3>
             <div className="flex flex-col gap-4">
-              <StratusInput 
-                label="Full Name" 
-                value={fullName} 
+              <StratusInput
+                label="Full Name"
+                value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
-              <StratusInput 
-                label="Email" 
-                value={email} 
+              <StratusInput
+                label="Email"
+                value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <StratusInput 
-                label="Phone" 
-                value={phone} 
+              <StratusInput
+                label="Phone"
+                value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
             </div>
@@ -58,24 +58,24 @@ export function SettingsScreen() {
           <div>
             <h3 className="text-[#1E1F22] mb-4">Integrations</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <IntegrationCard 
-                name="Google Calendar" 
-                status="Connected" 
+              <IntegrationCard
+                name="Google Calendar"
+                status="Connected"
                 icon="📅"
               />
-              <IntegrationCard 
-                name="Gmail" 
-                status="Connected" 
+              <IntegrationCard
+                name="Gmail"
+                status="Connected"
                 icon="✉️"
               />
-              <IntegrationCard 
-                name="Salesforce" 
-                status="Not Connected" 
+              <IntegrationCard
+                name="Salesforce"
+                status="Not Connected"
                 icon="☁️"
               />
-              <IntegrationCard 
-                name="Slack" 
-                status="Not Connected" 
+              <IntegrationCard
+                name="Slack"
+                status="Not Connected"
                 icon="💬"
               />
             </div>

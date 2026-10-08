@@ -24,7 +24,7 @@ export function TaskPackScreen() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <div className="flex-1 h-2 bg-[#E8EAED] rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-[#0057FF] transition-all duration-300"
                 style={{ width: `${(tasks.filter(t => t.completed).length / tasks.length) * 100}%` }}
               />
@@ -44,7 +44,7 @@ export function TaskPackScreen() {
                     {index + 1}
                   </span>
                 </div>
-                
+
                 <StratusCard className={`flex-1 ${task.completed ? 'bg-[#F7F9FA]' : 'border-2 border-[#0057FF]'}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -60,7 +60,7 @@ export function TaskPackScreen() {
                         {index === 5 && 'Book a call to discuss the proposal with the client'}
                       </p>
                       {!task.completed && (
-                        <StratusButton 
+                        <StratusButton
                           variant="primary"
                           onClick={() => {
                             const newTasks = [...tasks];
@@ -80,7 +80,7 @@ export function TaskPackScreen() {
                   </div>
                 </StratusCard>
               </div>
-              
+
               {index < tasks.length - 1 && (
                 <div className="ml-4 h-6 w-px bg-[#E8EAED]" />
               )}

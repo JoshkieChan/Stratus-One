@@ -16,7 +16,7 @@ export function LayoutTab() {
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-4">
                 <span className="w-12 text-[#6A6D72]">{item.label}</span>
-                <div 
+                <div
                   className="h-8 bg-[#0057FF] rounded"
                   style={{ width: item.value }}
                 />

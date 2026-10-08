@@ -13,11 +13,11 @@ interface OpportunityCardProps {
   scoreVariant?: 'winnable' | 'moderate' | 'avoid';
 }
 
-export function OpportunityCard({ 
-  title, 
-  score, 
-  deadline, 
-  value, 
+export function OpportunityCard({
+  title,
+  score,
+  deadline,
+  value,
   reasoning,
   scoreVariant = 'winnable',
   onClick
@@ -30,7 +30,7 @@ export function OpportunityCard({
           {score}/100
         </StratusBadge>
       </div>
-      
+
       <div className="flex items-center gap-4 text-[#6A6D72]">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />

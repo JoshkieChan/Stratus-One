@@ -58,4 +58,3 @@ export function createHandler(kind: 'score' | 'create', clientFor: (authorizatio
     } catch { return reply(500, { error: 'Request failed' }); }
   };
 }
-

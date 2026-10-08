@@ -8,9 +8,9 @@ interface StratusButtonProps {
   disabled?: boolean;
 }
 
-export function StratusButton({ 
-  variant = 'primary', 
-  children, 
+export function StratusButton({
+  variant = 'primary',
+  children,
   onClick,
   className = '',
   fullWidth = false,
@@ -18,7 +18,7 @@ export function StratusButton({
   type
 }: StratusButtonProps) {
   const baseStyles = "px-6 h-[var(--button-height)] rounded-[var(--radius-m)] transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed";
-  
+
   const variantStyles = {
     primary: "bg-[var(--color-accent-primary)] text-[var(--color-fg-inverse)] hover:bg-[var(--color-accent-primary-hover)] active:scale-[0.98]",
     secondary: "border-2 border-[var(--color-accent-primary)] text-[var(--color-accent-primary)] bg-[var(--color-bg-primary)] hover:bg-[var(--color-bg-secondary)] active:scale-[0.98]",
@@ -28,7 +28,7 @@ export function StratusButton({
   const widthStyle = fullWidth ? "w-full" : "";
 
   return (
-    <button 
+    <button
       type={type}
       onClick={onClick}
       disabled={disabled}

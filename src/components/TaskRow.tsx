@@ -33,7 +33,7 @@ export function TaskRow({ title, dueTime, status, checked = false, onCheck }: Ta
         onChange={(e) => onCheck?.(e.target.checked)}
         className="w-5 h-5 rounded border-2 border-[#D9DCE1] checked:bg-[#0057FF] checked:border-[#0057FF] cursor-pointer"
       />
-      
+
       <div className="flex-1">
         <p className={`${checked ? 'line-through text-[#6A6D72]' : 'text-[#0A0A0A]'}`}>
           {title}

@@ -35,18 +35,18 @@ Joshkie`);
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex flex-col gap-4">
             <h3 className="text-[#1E1F22]">Compose</h3>
-            
-            <StratusInput 
-              label="To" 
-              value={emailTo} 
+
+            <StratusInput
+              label="To"
+              value={emailTo}
               onChange={(e) => setEmailTo(e.target.value)}
             />
-            <StratusInput 
-              label="Subject" 
-              value={emailSubject} 
+            <StratusInput
+              label="Subject"
+              value={emailSubject}
               onChange={(e) => setEmailSubject(e.target.value)}
             />
-            
+
             <div className="flex flex-col gap-2">
               <label className="text-sm text-[#1E1F22]">Message</label>
               <textarea
@@ -65,14 +65,14 @@ Joshkie`);
 
           <div className="flex flex-col gap-4">
             <h3 className="text-[#1E1F22]">Preview</h3>
-            
+
             <StratusCard className="bg-[#F7F9FA]">
               <div className="mb-4 pb-4 border-b border-[#E8EAED]">
                 <p className="text-sm text-[#6A6D72] mb-1">From: you@yourdomain.com</p>
                 <p className="text-sm text-[#6A6D72] mb-1">To: {emailTo}</p>
                 <p className="text-sm mb-1">Subject: {emailSubject}</p>
               </div>
-              
+
               <div className="whitespace-pre-wrap text-sm">
                 {emailContent}
               </div>

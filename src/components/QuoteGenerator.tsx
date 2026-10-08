@@ -18,7 +18,7 @@ export function QuoteGenerator() {
     <StratusCard className="max-w-4xl">
       <h2 className="mb-6">Quote Generator</h2>
       {error && <p role="alert">{error}</p>}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-4">
           <StratusInput
@@ -56,13 +56,13 @@ export function QuoteGenerator() {
         <div className="flex flex-col gap-4">
           <div className="bg-[#F7F9FA] rounded-lg p-6 border-2 border-[#E8EAED]">
             <h3 className="mb-4">Summary</h3>
-            
+
             <div className="flex flex-col gap-3">
               <div className="flex justify-between items-center">
                 <span className="text-[#6A6D72]">Base Cost</span>
                 <span className="font-mono">${baseCost}</span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span className="text-[#6A6D72]">Markup</span>
                 <span className="font-mono">{markup}%</span>

@@ -40,7 +40,7 @@ export function ColorsTab() {
             {group.colors.map((color) => (
               <StratusCard key={color.hex}>
                 <div className="flex flex-col gap-3">
-                  <div 
+                  <div
                     className="h-24 rounded-lg"
                     style={{ backgroundColor: color.hex }}
                   />

@@ -9,10 +9,10 @@ interface StratusInputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   label?: string;
 }
 
-export function StratusInput({ 
-  placeholder, 
-  value, 
-  onChange, 
+export function StratusInput({
+  placeholder,
+  value,
+  onChange,
   type = "text",
   className = "",
   label,

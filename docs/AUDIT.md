@@ -24,7 +24,7 @@ The `components/ui` library is intentionally retained even where primitives are 
 
 Open work: hosted backend deployment and end-to-end verification ([setup](BACKEND.md)); generated database types; server PDF delivery; profile/notification persistence; email/planner/identity features; consistent dark styling in older examples; pagination. Navigation uses local state, records lack deep links, selected opportunity resets on reload and quote drafts are not autosaved. Authentication now has one shared provider; the workspace resets when the signed-in user changes.
 
-Vitest verifies real business calculations and React interactions with mocked Supabase service/handler responses. Embedded Postgres tests execute the migration and verify ownership isolation on all four tables; hosted authorization remains unverified. Node typechecking covers application source; the separate Deno check covers function entry points and shared handlers. A hosted Actions result requires pushing these changes; workflow presence is not a passing hosted run.
+Vitest verifies real business calculations and React interactions with mocked Supabase service/handler responses. Embedded Postgres tests execute the migration and verify ownership isolation on all four tables; hosted authorization remains unverified. Node typechecking covers application source; the separate Deno check covers function entry points and shared handlers. The pushed branch passed hosted GitHub Actions: [quality checks](https://github.com/JoshkieChan/Stratus-One/actions/runs/37732952385).
 
 The clean dependency install reports deprecation notices for ESLint 9, Recharts 2 and transitive whatwg-encoding. Their locked dependency graph passes the npm vulnerability audit; major-version migrations remain maintenance work and should include testing the reusable chart primitive. No deprecation notice is being treated as a security advisory or silently ignored as a deployment guarantee.
 
@@ -44,7 +44,7 @@ Node 24.19.0 / npm 11.6.2 on Windows:
 | Production HTTP smoke test | HTTP 200, expected Stratus One document title |
 | Interactive browser smoke test | Not verified: browser could not reach the preview through its environment |
 | Live Supabase and RLS | Embedded Postgres/RLS passed; hosted project not verified |
-| Hosted GitHub Actions | Workflow added; no pushed/hosted run performed |
+| Hosted GitHub Actions | Passed on commit f9720a1: frontend and Edge Function jobs |
 
 Supabase JS is pinned to 2.117.2, a release old enough to satisfy Deno's default dependency-age policy. No dependency-age protection was disabled. Test execution used the host environment because sandboxed Windows workers could not reliably read temporary transformed modules. This is an execution-environment limitation, not a skipped test suite.
 

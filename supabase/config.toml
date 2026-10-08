@@ -1,0 +1,7 @@
+project_id = "stratus-one"
+
+[functions.calculate-winnability]
+verify_jwt = true
+
+[functions.create-opportunity]
+verify_jwt = true

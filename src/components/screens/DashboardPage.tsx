@@ -14,6 +14,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,17 +24,13 @@ export function DashboardPage() {
   }, [user]);
 
   const loadDashboardData = async () => {
+    setError(null);
     try {
-      const opps = await OpportunityService.getAll(user!.id);
+      const [opps, allTasks] = await Promise.all([OpportunityService.getAll(user!.id), TaskService.getAll(user!.id)]);
       setOpportunities(opps);
-      
-      // Get tasks for all opportunities
-      const allTasks = await Promise.all(
-        opps.map(opp => TaskService.getByOpportunity(opp.id))
-      );
-      setTasks(allTasks.flat());
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      setTasks(allTasks);
+    } catch {
+      setError('Unable to load or save data. Check your connection and backend configuration, then reload.');
     } finally {
       setLoading(false);
     }
@@ -50,6 +47,8 @@ export function DashboardPage() {
     .filter(opp => opp.status === 'open' || opp.status === 'in_progress')
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 5);
+
+  if (error) return <p role="alert">{error}</p>;
 
   if (loading) {
     return (
@@ -73,7 +72,7 @@ export function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           icon={<Target className="w-5 h-5" />}
-          label="Active Opportunities"
+          label="Total Opportunities"
           value={stats.totalOpportunities}
           color="primary"
         />
@@ -121,7 +120,7 @@ export function DashboardPage() {
                         {formatDate(opp.deadline)}
                       </p>
                       <StratusBadge variant={getWinnabilityVariant(opp.winnabilityScore)}>
-                        {opp.winnabilityScore}% Win
+                        {opp.winnabilityScore}/100 priority
                       </StratusBadge>
                     </div>
                   </div>
@@ -134,19 +133,19 @@ export function DashboardPage() {
         {/* Quick Actions */}
         <div>
           <StratusCard>
-            <h3 className="mb-4">Quick Actions</h3>
+            <h3 className="mb-4">Quick Actions (planned)</h3>
             <div className="flex flex-col gap-3">
-              <StratusButton variant="primary" fullWidth>
+              <StratusButton disabled variant="primary" fullWidth>
                 <TrendingUp className="w-4 h-4" />
                 New Opportunity
               </StratusButton>
-              <StratusButton variant="secondary" fullWidth>
+              <StratusButton disabled variant="secondary" fullWidth>
                 Create Task Pack
               </StratusButton>
-              <StratusButton variant="secondary" fullWidth>
+              <StratusButton disabled variant="secondary" fullWidth>
                 Generate Quote
               </StratusButton>
-              <StratusButton variant="ghost" fullWidth>
+              <StratusButton disabled variant="ghost" fullWidth>
                 View All Tasks
               </StratusButton>
             </div>

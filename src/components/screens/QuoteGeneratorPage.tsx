@@ -1,29 +1,34 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useResource } from '../../hooks/useResource';
+import { calculateQuote } from '../../domain/quotes';
+import { QuotePrintView } from '../QuotePrintView';
 import { useAuth } from '../../hooks/useAuth';
 import { QuoteService } from '../../services/QuoteService';
 import { StratusButton } from '../StratusButton';
 import { StratusCard } from '../StratusCard';
 import { StratusInput } from '../StratusInput';
-import { QuoteGenerator } from '../QuoteGenerator';
 import { Plus, Download, Send } from 'lucide-react';
 import { formatCurrency } from '../../utils/format';
 import type { QuoteLineItem } from '../../types/quote';
 
 export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }) {
   const { user } = useAuth();
-  const [lineItems, setLineItems] = useState<QuoteLineItem[]>([
+  const [lineItems, setLineItems] = useState<Array<QuoteLineItem & { id: string }>>([
     { id: '1', description: '', quantity: 1, unitPrice: 0, total: 0 },
   ]);
   const [quoteTitle, setQuoteTitle] = useState('');
   const [taxRate, setTaxRate] = useState(0);
   const [notes, setNotes] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const loadQuotes = useCallback(() => opportunityId ? QuoteService.getByOpportunity(opportunityId) : Promise.resolve([]), [opportunityId]);
+  const savedQuotes = useResource(loadQuotes);
 
   const handleAddLineItem = () => {
     setLineItems([
       ...lineItems,
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         description: '',
         quantity: 1,
         unitPrice: 0,
@@ -32,7 +37,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
     ]);
   };
 
-  const handleUpdateLineItem = (id: string, field: keyof QuoteLineItem, value: any) => {
+  const handleUpdateLineItem = <K extends 'description' | 'quantity' | 'unitPrice'>(id: string, field: K, value: QuoteLineItem[K]) => {
     setLineItems(lineItems.map(item => {
       if (item.id === id) {
         const updated = { ...item, [field]: value };
@@ -49,9 +54,10 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
     setLineItems(lineItems.filter(item => item.id !== id));
   };
 
-  const subtotal = lineItems.reduce((sum, item) => sum + item.total, 0);
-  const taxAmount = subtotal * (taxRate / 100);
-  const total = subtotal + taxAmount;
+  let subtotal = 0, taxAmount = 0, total = 0;
+  let validationError = '';
+  try { ({ subtotal, taxAmount, total } = calculateQuote(lineItems, taxRate / 100)); }
+  catch (error) { validationError = error instanceof Error ? error.message : 'Invalid quote'; }
 
   const handleSaveQuote = async () => {
     if (!opportunityId || !user) return;
@@ -61,14 +67,14 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
       await QuoteService.create(user.id, {
         opportunityId,
         title: quoteTitle,
-        lineItems: lineItems.map(({ id, ...item }) => item),
+        lineItems: lineItems.map(({ id: _id, ...item }) => item),
         taxRate: taxRate / 100,
         notes,
       });
-      alert('Quote saved successfully!');
+      setMessage('Quote saved successfully.');
+      savedQuotes.refresh();
     } catch (error) {
-      console.error('Failed to save quote:', error);
-      alert('Failed to save quote');
+      setMessage(error instanceof Error ? error.message : 'Failed to save quote');
     } finally {
       setLoading(false);
     }
@@ -85,18 +91,26 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
           </p>
         </div>
         <div className="flex gap-3">
-          <StratusButton variant="secondary">
+          <StratusButton variant="secondary" disabled={Boolean(validationError) || lineItems.length === 0 || !quoteTitle.trim()} onClick={() => window.print()}>
             <Download className="w-4 h-4" />
-            Export PDF
+            Print / Save PDF
           </StratusButton>
-          <StratusButton variant="primary" onClick={handleSaveQuote} disabled={loading}>
+          <StratusButton variant="primary" onClick={handleSaveQuote} disabled={loading || !opportunityId || !quoteTitle.trim() || lineItems.length === 0 || Boolean(validationError)}>
             <Send className="w-4 h-4" />
             {loading ? 'Saving...' : 'Save Quote'}
           </StratusButton>
         </div>
       </div>
 
+      <p role="status">{validationError || message || (!opportunityId ? 'Select an opportunity in the feed before saving a quote.' : '')}</p>
+      {!validationError && <QuotePrintView title={quoteTitle} items={lineItems} taxRate={taxRate / 100} notes={notes} />}
       {/* Quote Details */}
+      {opportunityId && <StratusCard>
+        <h3>Saved quotes for this opportunity</h3>
+        {savedQuotes.loading ? <p role="status">Loading saved quotes…</p> : savedQuotes.error ? <p role="alert">{savedQuotes.error}</p> : savedQuotes.data?.length ? <ul>
+          {savedQuotes.data.map(quote => <li key={quote.id}>{quote.title} — {formatCurrency(quote.total)} ({quote.status})</li>)}
+        </ul> : <p>No saved quotes yet.</p>}
+      </StratusCard>}
       <StratusCard>
         <h3 className="mb-4">Quote Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,6 +123,9 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
           <StratusInput
             label="Tax Rate (%)"
             type="number"
+            min={0}
+            max={100}
+            step="any"
             placeholder="0"
             value={taxRate.toString()}
             onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
@@ -132,6 +149,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
               <div className="flex-1 min-w-[200px]">
                 <StratusInput
                   placeholder="Description"
+                  aria-label={`Description ${index + 1}`}
                   value={item.description}
                   onChange={(e) => handleUpdateLineItem(item.id, 'description', e.target.value)}
                 />
@@ -140,6 +158,9 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
                 <StratusInput
                   type="number"
                   placeholder="Qty"
+                  aria-label={`Quantity ${index + 1}`}
+                  min={0}
+                  step="any"
                   value={item.quantity.toString()}
                   onChange={(e) => handleUpdateLineItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
                 />
@@ -148,6 +169,9 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
                 <StratusInput
                   type="number"
                   placeholder="Unit Price"
+                  aria-label={`Unit price ${index + 1}`}
+                  min={0}
+                  step="any"
                   value={item.unitPrice.toString()}
                   onChange={(e) => handleUpdateLineItem(item.id, 'unitPrice', parseFloat(e.target.value) || 0)}
                 />

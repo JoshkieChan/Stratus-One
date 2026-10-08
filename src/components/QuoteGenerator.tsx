@@ -1,3 +1,4 @@
+import { calculateMarkup } from '../domain/quotes';
 import { useState } from 'react';
 import { StratusCard } from './StratusCard';
 import { StratusInput } from './StratusInput';
@@ -6,23 +7,17 @@ import { FileDown } from 'lucide-react';
 
 export function QuoteGenerator() {
   const [baseCost, setBaseCost] = useState('5000');
-  const [margin, setMargin] = useState(30);
+  const [markup, setMarkup] = useState(30);
 
-  const calculateTotal = () => {
-    const cost = parseFloat(baseCost) || 0;
-    const total = cost + (cost * margin / 100);
-    return total.toFixed(2);
-  };
-
-  const calculateProfit = () => {
-    const cost = parseFloat(baseCost) || 0;
-    const profit = cost * margin / 100;
-    return profit.toFixed(2);
-  };
+  let quote = { total: 0, profit: 0 };
+  let error = '';
+  try { quote = calculateMarkup(Number(baseCost), markup); }
+  catch (cause) { error = cause instanceof Error ? cause.message : 'Invalid cost'; }
 
   return (
     <StratusCard className="max-w-4xl">
       <h2 className="mb-6">Quote Generator</h2>
+      {error && <p role="alert">{error}</p>}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="flex flex-col gap-4">
@@ -35,24 +30,25 @@ export function QuoteGenerator() {
           />
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm text-[#1E1F22]">Margin (%)</label>
+            <label htmlFor="quote-markup" className="text-sm text-[#1E1F22]">Markup (%)</label>
             <div className="flex items-center gap-4">
               <input
                 type="range"
+                id="quote-markup"
                 min="0"
                 max="100"
-                value={margin}
-                onChange={(e) => setMargin(parseInt(e.target.value))}
+                value={markup}
+                onChange={(e) => setMarkup(parseInt(e.target.value))}
                 className="flex-1 h-2 bg-[#E8EAED] rounded-lg appearance-none cursor-pointer accent-[#0057FF]"
               />
-              <span className="text-sm font-mono min-w-[50px] text-right">{margin}%</span>
+              <span className="text-sm font-mono min-w-[50px] text-right">{markup}%</span>
             </div>
           </div>
 
-          <StratusButton variant="primary" className="mt-4">
+          <StratusButton disabled variant="primary" className="mt-4">
             <div className="flex items-center gap-2">
               <FileDown className="w-4 h-4" />
-              Export PDF
+              PDF export (not available)
             </div>
           </StratusButton>
         </div>
@@ -68,20 +64,20 @@ export function QuoteGenerator() {
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-[#6A6D72]">Margin</span>
-                <span className="font-mono">{margin}%</span>
+                <span className="text-[#6A6D72]">Markup</span>
+                <span className="font-mono">{markup}%</span>
               </div>
 
               <div className="flex justify-between items-center">
                 <span className="text-[#6A6D72]">Profit</span>
-                <span className="font-mono text-[#27AE60]">${calculateProfit()}</span>
+                <span className="font-mono text-[#27AE60]">${quote.profit.toFixed(2)}</span>
               </div>
 
               <div className="h-px bg-[#E8EAED] my-2" />
 
               <div className="flex justify-between items-center">
                 <span>Total Quote</span>
-                <span className="font-mono text-[#0057FF]">${calculateTotal()}</span>
+                <span className="font-mono text-[#0057FF]">${quote.total.toFixed(2)}</span>
               </div>
             </div>
           </div>

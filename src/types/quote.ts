@@ -1,5 +1,5 @@
 export interface QuoteLineItem {
-  id: string;
+  id?: string;
   description: string;
   quantity: number;
   unitPrice: number;

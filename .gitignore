@@ -1,1 +1,13 @@
-node_modules
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+!.env.example
+.supabase/
+supabase/.temp/
+supabase/.branches/

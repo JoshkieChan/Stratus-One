@@ -10,24 +10,27 @@ export function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState('');
 
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setNotice('');
     setLoading(true);
 
     try {
       if (isSignUp) {
         const { error } = await signUp(email, password);
         if (error) throw error;
+        setNotice('Check your email to confirm your account before signing in.');
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
       }
-    } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -54,10 +57,13 @@ export function LoginPage() {
           )}
 
           {/* Form */}
+          {notice && <p role="status">{notice}</p>}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <StratusInput
               label="Email"
               type="email"
+              required
+              autoComplete="email"
               placeholder="founder@stratus.one"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -66,6 +72,8 @@ export function LoginPage() {
             <StratusInput
               label="Password"
               type="password"
+              required
+              autoComplete={isSignUp ? 'new-password' : 'current-password'}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

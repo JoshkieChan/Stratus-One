@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { OpportunityService } from '../../services/OpportunityService';
 import { OpportunityCard } from '../OpportunityCard';
+import { OpportunityForm } from '../OpportunityForm';
 import { StratusButton } from '../StratusButton';
-import { StratusInput } from '../StratusInput';
-import { Filter, Plus, Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import type { Opportunity } from '../../types/opportunity';
 
-export function OpportunityFeedPage() {
+export function OpportunityFeedPage({ onSelect }: { onSelect: (id: string) => void }) {
   const { user } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -21,11 +23,12 @@ export function OpportunityFeedPage() {
   }, [user]);
 
   const loadOpportunities = async () => {
+    setError(null);
     try {
       const data = await OpportunityService.getAll(user!.id);
       setOpportunities(data);
-    } catch (error) {
-      console.error('Failed to load opportunities:', error);
+    } catch {
+      setError('Unable to load or save data. Check your connection and backend configuration, then reload.');
     } finally {
       setLoading(false);
     }
@@ -37,6 +40,8 @@ export function OpportunityFeedPage() {
     const matchesStatus = filterStatus === 'all' || opp.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
+
+  if (error) return <p role="alert">{error}</p>;
 
   if (loading) {
     return (
@@ -56,12 +61,13 @@ export function OpportunityFeedPage() {
             {filteredOpportunities.length} opportunities found
           </p>
         </div>
-        <StratusButton variant="primary">
+        <StratusButton variant="primary" onClick={() => setCreating(true)}>
           <Plus className="w-4 h-4" />
           New Opportunity
         </StratusButton>
       </div>
 
+      {creating && user && <OpportunityForm userId={user.id} onCancel={() => setCreating(false)} onCreated={opportunity => { setOpportunities(previous => [opportunity, ...previous]); setCreating(false); }} />}
       {/* Search and Filter Bar */}
       <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[200px]">
@@ -70,6 +76,7 @@ export function OpportunityFeedPage() {
             <input
               type="text"
               placeholder="Search opportunities..."
+              aria-label="Search opportunities"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full h-[var(--input-height)] pl-10 pr-4 rounded-[var(--radius-m)] border border-[var(--color-border-strong)] bg-[var(--color-bg-primary)] text-[var(--color-fg-primary)] placeholder:text-[var(--color-fg-tertiary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-accent-primary)]/20 transition-all"
@@ -78,6 +85,7 @@ export function OpportunityFeedPage() {
         </div>
 
         <select
+          aria-label="Filter by status"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           className="h-[var(--input-height)] px-4 rounded-[var(--radius-m)] border border-[var(--color-border-strong)] bg-[var(--color-bg-primary)] text-[var(--color-fg-primary)] focus:outline-none focus:border-[var(--color-accent-primary)] focus:ring-2 focus:ring-[var(--color-accent-primary)]/20 transition-all"
@@ -88,6 +96,7 @@ export function OpportunityFeedPage() {
           <option value="submitted">Submitted</option>
           <option value="won">Won</option>
           <option value="lost">Lost</option>
+          <option value="closed">Closed</option>
         </select>
       </div>
 
@@ -101,8 +110,13 @@ export function OpportunityFeedPage() {
           {filteredOpportunities.map(opportunity => (
             <OpportunityCard
               key={opportunity.id}
-              opportunity={opportunity}
-              onClick={() => console.log('View opportunity:', opportunity.id)}
+              title={opportunity.title}
+              score={opportunity.winnabilityScore}
+              deadline={opportunity.deadline}
+              value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(opportunity.value)}
+              reasoning={opportunity.description}
+              scoreVariant={opportunity.winnabilityScore >= 70 ? 'winnable' : opportunity.winnabilityScore >= 40 ? 'moderate' : 'avoid'}
+              onClick={() => onSelect(opportunity.id)}
             />
           ))}
         </div>

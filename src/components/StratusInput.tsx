@@ -1,4 +1,6 @@
-interface StratusInputProps {
+import { useId } from 'react';
+
+interface StratusInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -13,14 +15,20 @@ export function StratusInput({
   onChange, 
   type = "text",
   className = "",
-  label
+  label,
+  id,
+  ...props
 }: StratusInputProps) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
   return (
     <div className={`flex flex-col gap-2 w-full ${className}`}>
       {label && (
-        <label className="text-sm text-[var(--color-fg-primary)]">{label}</label>
+        <label htmlFor={inputId} className="text-sm text-[var(--color-fg-primary)]">{label}</label>
       )}
       <input
+        {...props}
+        id={inputId}
         type={type}
         placeholder={placeholder}
         value={value}

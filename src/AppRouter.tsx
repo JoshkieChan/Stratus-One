@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
+import { AuthProvider } from './hooks/AuthProvider';
 import {
   LoginPage,
   DashboardPage,
@@ -11,7 +12,6 @@ import {
 } from "./components/screens";
 import { StratusLogo } from "./components/StratusLogo";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { StratusButton } from "./components/StratusButton";
 import {
   LayoutDashboard,
   FileText,
@@ -38,9 +38,21 @@ type PageRoute =
   | "planner";
 
 export default function AppRouter() {
+  return <AuthProvider><AuthenticatedWorkspace /></AuthProvider>;
+}
+
+function AuthenticatedWorkspace() {
+  const { user, loading } = useAuth();
+  if (loading) return <p role="status" className="p-8">Loading session…</p>;
+  if (!user) return <LoginPage />;
+  return <Workspace key={user.id} />;
+}
+
+function Workspace() {
   const { user, loading } = useAuth();
   const [activePage, setActivePage] =
     useState<PageRoute>("dashboard");
+  const [selectedId, setSelectedId] = useState<string>();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   if (loading) {
@@ -161,6 +173,8 @@ export default function AppRouter() {
         <header className="bg-[var(--color-bg-primary)] border-b border-[var(--color-border-default)] sticky top-0 z-40">
           <div className="px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between gap-4">
             <button
+              aria-label="Toggle navigation"
+              aria-expanded={sidebarOpen}
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-[var(--color-bg-secondary)] rounded-lg transition-colors flex-shrink-0"
             >
@@ -174,6 +188,7 @@ export default function AppRouter() {
             <div className="flex-1" />
 
             <div className="flex items-center gap-3 flex-shrink-0">
+              <a href="?mode=showcase">Design showcase</a>
               <ThemeToggle />
             </div>
           </div>
@@ -182,9 +197,9 @@ export default function AppRouter() {
         {/* Page Content */}
         <main className="flex-1 px-4 sm:px-8 py-6 sm:py-8 overflow-y-auto">
           {activePage === "dashboard" && <DashboardPage />}
-          {activePage === "feed" && <OpportunityFeedPage />}
-          {activePage === "taskpack" && <TaskPackPage />}
-          {activePage === "quotegen" && <QuoteGeneratorPage />}
+          {activePage === "feed" && <OpportunityFeedPage onSelect={id => { setSelectedId(id); setActivePage('taskpack'); }} />}
+          {activePage === "taskpack" && <TaskPackPage key={selectedId} opportunityId={selectedId} />}
+          {activePage === "quotegen" && <QuoteGeneratorPage key={selectedId} opportunityId={selectedId} />}
           {activePage === "pipeline" && <PipelineBoardPage />}
           {activePage === "settings" && <SettingsPage />}
           {activePage === "email" && (
@@ -228,6 +243,7 @@ function NavButton({
   return (
     <button
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
       className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all mb-1 ${
         active
           ? "bg-[var(--color-accent-primary)] text-white shadow-sm"

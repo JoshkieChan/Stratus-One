@@ -1,4 +1,5 @@
 interface StratusButtonProps {
+  type?: 'button' | 'submit' | 'reset';
   variant?: 'primary' | 'secondary' | 'ghost';
   children: React.ReactNode;
   onClick?: () => void;
@@ -13,7 +14,8 @@ export function StratusButton({
   onClick,
   className = '',
   fullWidth = false,
-  disabled = false
+  disabled = false,
+  type
 }: StratusButtonProps) {
   const baseStyles = "px-6 h-[var(--button-height)] rounded-[var(--radius-m)] transition-all duration-200 cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed";
   
@@ -27,6 +29,7 @@ export function StratusButton({
 
   return (
     <button 
+      type={type}
       onClick={onClick}
       disabled={disabled}
       className={`${baseStyles} ${variantStyles[variant]} ${widthStyle} ${className}`}

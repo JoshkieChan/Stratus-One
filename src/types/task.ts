@@ -8,7 +8,7 @@ export interface Task {
   priority: 'low' | 'medium' | 'high' | 'critical';
   assignedTo?: string;
   dueDate?: string;
-  completedAt?: string;
+  completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,5 +36,5 @@ export interface TaskCreateInput {
 export interface TaskUpdateInput extends Partial<TaskCreateInput> {
   status?: Task['status'];
   assignedTo?: string;
-  completedAt?: string;
+  completedAt?: string | null;
 }

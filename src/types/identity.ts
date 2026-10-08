@@ -5,7 +5,7 @@ export interface IdentityScore {
   score: number;
   maxScore: number;
   lastCalculated: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface Skill {

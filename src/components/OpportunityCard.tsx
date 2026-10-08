@@ -4,6 +4,7 @@ import { StratusButton } from './StratusButton';
 import { Calendar, DollarSign } from 'lucide-react';
 
 interface OpportunityCardProps {
+  onClick?: () => void;
   title: string;
   score: number;
   deadline: string;
@@ -18,14 +19,15 @@ export function OpportunityCard({
   deadline, 
   value, 
   reasoning,
-  scoreVariant = 'winnable'
+  scoreVariant = 'winnable',
+  onClick
 }: OpportunityCardProps) {
   return (
     <StratusCard className="flex flex-col gap-4 max-w-[380px]">
       <div className="flex items-start justify-between">
         <h3 className="flex-1 pr-2">{title}</h3>
         <StratusBadge variant={scoreVariant}>
-          {score}%
+          {score}/100
         </StratusBadge>
       </div>
       
@@ -41,12 +43,12 @@ export function OpportunityCard({
       </div>
 
       <div className="bg-[#F7F9FA] rounded-lg p-4">
-        <p className="text-sm text-[#1E1F22] mb-1">Why You Can Win</p>
+        <p className="text-sm text-[#1E1F22] mb-1">Priority assessment</p>
         <p className="text-sm text-[#6A6D72]">{reasoning}</p>
       </div>
 
-      <StratusButton variant="primary" fullWidth>
-        Start Now
+      <StratusButton variant="primary" fullWidth onClick={onClick} disabled={!onClick}>
+        Open opportunity
       </StratusButton>
     </StratusCard>
   );

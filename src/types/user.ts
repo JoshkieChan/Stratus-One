@@ -1,3 +1,4 @@
+import type { Session } from '@supabase/supabase-js';
 export interface User {
   id: string;
   email: string;
@@ -9,6 +10,6 @@ export interface User {
 
 export interface AuthUser {
   user: User | null;
-  session: any;
+  session: Session | null;
   loading: boolean;
 }

@@ -8,14 +8,16 @@ import { User, Bell, Shield, Database, LogOut } from 'lucide-react';
 
 export function SettingsPage() {
   const { user, signOut } = useAuth();
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSignOut = async () => {
     setLoading(true);
     try {
-      await signOut();
-    } catch (error) {
-      console.error('Failed to sign out:', error);
+      const { error } = await signOut();
+      if (error) throw error;
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Sign out failed');
     } finally {
       setLoading(false);
     }
@@ -31,6 +33,8 @@ export function SettingsPage() {
         </p>
       </div>
 
+      <p role="status">{error || 'Only theme and sign-out are available. Profile edits, notifications, security management and data export are planned.'}</p>
+      <fieldset disabled>
       {/* Profile Settings */}
       <StratusCard>
         <div className="flex items-center gap-3 mb-6">
@@ -63,6 +67,7 @@ export function SettingsPage() {
         </div>
       </StratusCard>
 
+      </fieldset>
       {/* Appearance */}
       <StratusCard>
         <div className="flex items-center gap-3 mb-6">
@@ -81,6 +86,7 @@ export function SettingsPage() {
         </div>
       </StratusCard>
 
+      <fieldset disabled>
       {/* Notifications */}
       <StratusCard>
         <div className="flex items-center gap-3 mb-6">
@@ -155,6 +161,7 @@ export function SettingsPage() {
         </div>
       </StratusCard>
 
+      </fieldset>
       {/* Sign Out */}
       <StratusCard className="border-[var(--color-danger)]">
         <div className="flex items-center justify-between">

@@ -15,6 +15,10 @@ test('demo workflow persists locally, resets, and never contacts a backend', asy
   await expect(page.getByLabel('Complete Confirm delivery milestones')).toBeChecked();
   await page.reload();
   await expect(page.getByLabel('Complete Confirm delivery milestones')).toBeChecked();
+  await page.getByLabel('Complete Confirm delivery milestones').click();
+  await expect(page.getByLabel('Complete Confirm delivery milestones')).not.toBeChecked();
+  await page.reload();
+  await expect(page.getByLabel('Complete Confirm delivery milestones')).not.toBeChecked();
   await page.getByLabel('New task pack name').fill('Review checklist');
   await page.getByRole('button', { name: 'Create Task Pack' }).click();
   await page.getByLabel('New task for Review checklist').fill('Check scope');
@@ -104,6 +108,66 @@ test('demo and hosted entry modes are explicit and independent', async ({ page }
   await expect(page).toHaveURL(/mode=app/);
   await expect(page.getByLabel('Password', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Demo environment')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Explore the local portfolio demo' }).click();
+  await page.getByRole('link', { name: 'Explore the local demo' }).click();
   await expect(page.getByLabel('Demo environment')).toBeVisible();
+});
+
+test('demo pagination, filtering and form cancellation use local records', async ({ page }) => {
+  await page.goto('/?mode=demo#page=feed');
+  await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('button', { name: 'Save Profile' }).click();
+  await expect(page.getByRole('status')).toHaveText('Profile saved.');
+  await page.getByRole('button', { name: 'Opportunity Feed', exact: true }).click();
+  // Extend the local fixture to exercise a second page without any backend mocks.
+  await page.evaluate(() => {
+    const key = 'stratus-one-demo-v1';
+    // Saving a profile initializes sessionStorage without changing opportunity fixtures.
+    const state = JSON.parse(sessionStorage.getItem(key)!);
+    const sample = state.opportunities[0];
+    state.opportunities = Array.from({ length: 25 }, (_, index) => ({ ...sample, id: crypto.randomUUID(), title: `Example opportunity ${index + 1}`, status: index === 24 ? 'won' : 'open' }));
+    sessionStorage.setItem(key, JSON.stringify(state));
+  });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Open opportunity', exact: true })).toHaveCount(24);
+  await page.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Open opportunity', exact: true })).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Previous', exact: true }).click();
+  await page.getByLabel('Filter by status').selectOption('won');
+  await expect(page.getByRole('button', { name: 'Open opportunity', exact: true })).toHaveCount(1);
+  await expect(page.getByText('Example opportunity 25', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'New Opportunity', exact: true }).click();
+  await page.getByRole('button', { name: 'Create Opportunity', exact: true }).click();
+  expect(await page.getByLabel('Opportunity title').evaluate((input: HTMLInputElement) => input.validity.valid)).toBe(false);
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(page.getByLabel('Opportunity title')).not.toBeVisible();
+});
+
+test('demo quote validation, line editing, printing and new estimates', async ({ page }) => {
+  await page.goto(`/?mode=demo#page=quotegen&opportunity=${firstId}`);
+  await page.getByRole('button', { name: 'Edit Accessibility audit estimate' }).click();
+  await page.getByLabel('Quantity 1', { exact: true }).fill('-1');
+  await expect(page.getByRole('button', { name: 'Save Quote', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Print / Save PDF', exact: true })).toBeDisabled();
+  await page.getByLabel('Quantity 1', { exact: true }).fill('40');
+  await page.getByRole('button', { name: 'Add Item', exact: true }).click();
+  await page.getByLabel('Description 3', { exact: true }).fill('Additional review');
+  await page.getByLabel('Unit price 3', { exact: true }).fill('10');
+  await expect(page.getByText('$5,890.50', { exact: true }).last()).toBeVisible();
+  await page.getByRole('button', { name: 'Remove', exact: true }).last().click();
+  await page.evaluate(() => { window.print = () => { document.documentElement.dataset.printRequested = 'true'; }; });
+  await page.getByRole('button', { name: 'Print / Save PDF', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-print-requested', 'true');
+  await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.quote-print')).toBeVisible();
+  await expect(page.locator('.quote-print')).toContainText('LOCAL DEMO');
+  await expect(page.locator('.quote-print')).toContainText('$5,880.00');
+  await page.emulateMedia({ media: 'screen' });
+  await page.getByRole('button', { name: 'New quote', exact: true }).click();
+  await page.getByLabel('Quote Title').fill('New local estimate');
+  await page.getByLabel('Description 1', { exact: true }).fill('Planning');
+  await page.getByLabel('Unit price 1', { exact: true }).fill('100');
+  await page.getByRole('button', { name: 'Save Quote', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Edit New local estimate' })).toBeVisible();
 });

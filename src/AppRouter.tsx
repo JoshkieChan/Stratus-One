@@ -40,7 +40,7 @@ function Workspace() {
         <button className="p-2 md:hidden" aria-label="Toggle navigation" aria-expanded={menuOpen} aria-controls="workspace-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>
       </div>
       {demo && <div className="px-4 sm:px-8 py-3 bg-[var(--color-accent-primary)]/10 flex flex-wrap items-center gap-3" aria-label="Demo environment">
-        <p className="flex-1 min-w-0 text-sm"><strong>Portfolio demo · fictional data.</strong> {demoStorageAvailable() ? 'Changes stay in this browser tab, including reloads. Use Reset demo to start over.' : 'Browser storage is unavailable; changes last only until reload.'} No remote data is saved.</p>
+        <p className="flex-1 min-w-0 text-sm"><strong>Local demo · fictional data.</strong> {demoStorageAvailable() ? 'Changes stay in this browser tab, including reloads. Use Reset demo to start over.' : 'Browser storage is unavailable; changes last only until reload.'} No remote data is saved.</p>
         <button className="underline text-sm" onClick={() => { if (window.confirm('Reset all demo opportunities, tasks, quotes and profile changes in this tab?')) { resetDemo(); window.location.assign('?mode=demo'); } }}>Reset demo</button>
       </div>}
     </header>

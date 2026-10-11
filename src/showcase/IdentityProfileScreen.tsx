@@ -85,7 +85,7 @@ export function IdentityProfileScreen() {
         </div>
 
         <div className="mb-8">
-          <h3 className="text-[#1E1F22] mb-4">Portfolio Highlights</h3>
+          <h3 className="text-[#1E1F22] mb-4">Project Highlights</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StratusCard className="bg-[#F7F9FA]">
               <p className="text-sm text-[#6A6D72] mb-1">Projects Completed</p>
@@ -106,7 +106,7 @@ export function IdentityProfileScreen() {
           <h3 className="text-[#1E1F22] mb-4">Next 3 Steps to Improve</h3>
           <div className="flex flex-col gap-3">
             <TaskRow title="Complete advanced Salesforce certification" dueTime="This month" status="pending" />
-            <TaskRow title="Build portfolio case study for enterprise clients" dueTime="Next 2 weeks" status="in-progress" />
+            <TaskRow title="Document completed enterprise projects" dueTime="Next 2 weeks" status="in-progress" />
             <TaskRow title="Expand network in fintech industry" dueTime="Ongoing" status="pending" />
           </div>
         </div>

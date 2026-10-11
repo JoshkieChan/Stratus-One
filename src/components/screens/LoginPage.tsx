@@ -102,7 +102,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        <p className="mt-6 text-center"><a className="underline" href="?mode=demo">Explore the local portfolio demo</a></p>
+        <p className="mt-6 text-center"><a className="underline" href="?mode=demo">Explore the local demo</a></p>
         {/* Footer */}
         <p className="text-center text-sm text-[var(--color-fg-secondary)] mt-6">
           Stratus One · Supabase workspace

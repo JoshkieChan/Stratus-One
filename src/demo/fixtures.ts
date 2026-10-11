@@ -31,6 +31,6 @@ export function createFixtures(): DemoState {
   }));
   return { version: 1, opportunities, tasks, packs: [{ id: packId, opportunityId: DEMO_OPPORTUNITY_ID, name: 'Proposal preparation', description: 'A small checklist for a first response.', status: 'active', tasks: [], createdAt: now, updatedAt: now }],
     quotes: [{ id: '55555555-5555-4555-8555-555555555555', opportunityId: DEMO_OPPORTUNITY_ID, userId: DEMO_USER_ID, quoteNumber: 'DEMO-Q-001', title: 'Accessibility audit estimate', status: 'draft', version: 1,
-      lineItems: [{ description: 'Audit and reporting', quantity: 40, unitPrice: 125, total: 5000 }, { description: 'Review workshop', quantity: 4, unitPrice: 150, total: 600 }], subtotal: 5600, taxRate: 0.05, taxAmount: 280, total: 5880, notes: 'Fictional estimate for portfolio demonstration.', createdAt: now, updatedAt: now }],
+      lineItems: [{ description: 'Audit and reporting', quantity: 40, unitPrice: 125, total: 5000 }, { description: 'Review workshop', quantity: 4, unitPrice: 150, total: 600 }], subtotal: 5600, taxRate: 0.05, taxAmount: 280, total: 5880, notes: 'Fictional estimate for local demonstration.', createdAt: now, updatedAt: now }],
     profile: { full_name: 'Demo Reviewer', organization: 'Example Studio' } };
 }

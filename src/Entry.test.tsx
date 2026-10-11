@@ -6,7 +6,8 @@ vi.mock('./App', () => ({ default: () => <p>Showcase loaded</p> }));
 vi.mock('./AppRouter', () => ({ default: () => <p>Application loaded</p> }));
 import Entry from './Entry';
 afterEach(() => { cleanup(); vi.unstubAllEnvs(); window.history.replaceState(null, '', '/'); });
-it('opens the showcase without backend configuration', async () => {
+it('opens the showcase only when explicitly requested', async () => {
+  window.history.replaceState(null, '', '/?mode=showcase');
   render(<Entry />);
   expect(await screen.findByText('Showcase loaded')).toBeInTheDocument();
 });
@@ -20,6 +21,12 @@ it('opens the application when configured and requested', async () => {
   vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
   vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'sb_publishable_example');
   window.history.replaceState(null, '', '/?mode=app');
+  render(<Entry />);
+  expect(await screen.findByText('Application loaded')).toBeInTheDocument();
+});
+
+it('opens the main demo by default without credentials', async () => {
+  vi.stubEnv('VITE_SUPABASE_URL', ''); vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
   render(<Entry />);
   expect(await screen.findByText('Application loaded')).toBeInTheDocument();
 });

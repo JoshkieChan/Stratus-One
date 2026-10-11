@@ -102,9 +102,10 @@ export function LoginPage() {
           </div>
         </div>
 
+        <p className="mt-6 text-center"><a className="underline" href="?mode=demo">Explore the local portfolio demo</a></p>
         {/* Footer */}
         <p className="text-center text-sm text-[var(--color-fg-secondary)] mt-6">
-          © 2025 StratusOne OS. All rights reserved.
+          Stratus One · Supabase workspace
         </p>
       </div>
     </div>

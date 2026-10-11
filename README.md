@@ -1,109 +1,79 @@
-
 # Stratus One
 
-A React + TypeScript opportunity-workflow prototype with a reusable design system. Review contract opportunities, organize associated tasks, inspect a pipeline, and prepare quote estimates in one interface.
+A React + TypeScript workspace for reviewing contract opportunities, organizing proposal tasks, preparing estimates and tracking pipeline decisions.
 
-**Status:** a runnable design showcase and a Supabase-backed workflow application with a versioned schema and tested ownership policies. The showcase works without credentials. A hosted backend still needs provisioning and end-to-end verification. Unsupported actions are labeled rather than simulated.
+**Start with the main application demo: no account, credentials or Supabase project required.** The same screens also support a real Supabase backend. Hosted deployment and verification are pending; this is not a production deployment.
 
-## Run locally
+![Main application demo dashboard](docs/screenshots/dashboard.png)
 
-Use Node.js 24 LTS and npm:
+## Run and explore
+
+Install Node.js 24 LTS with npm, then run from this repository:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000` for the design showcase. Sample records and illustrative controls do not persist. The markup calculator and theme toggle are interactive. Use **Open application** (`?mode=app`) for the Supabase workspace.
+Open the URL printed by Vite (normally `http://localhost:3000`). If `node` or `npm` is not recognized, install Node.js and reopen the terminal. If dependencies are already installed, `node node_modules/vite/bin/vite.js` also starts the app.
 
-Copy `.env.example` to `.env.local` to configure the workspace:
+| Mode | URL | Data and persistence |
+| --- | --- | --- |
+| Main portfolio demo (default) | `/` or `/?mode=demo` | Fictional local fixtures. Saved opportunities, tasks, quotes and profile changes use this tab's sessionStorage; reloads retain them. **Reset demo** restores fixtures. No backend requests or remote saves. |
+| Design-system showcase | `/?mode=showcase` | Separate component gallery and illustrative layouts. Sample controls are not product integrations; changes are not saved. |
+| Real application | `/?mode=app` | Requires a provisioned Supabase project, schema, Auth and functions. Data persists in PostgreSQL under owner RLS. |
+
+Theme preference uses browser localStorage across modes. Unsaved form/quote edits are discarded when leaving a screen. Browser session restoration may restore demo data; Reset demo is the reliable fresh start. If storage is blocked, the banner reports that edits last only until reload.
+
+**Two-minute walkthrough:** dashboard → Opportunity Feed → open an opportunity → review its detail → open task workflow → complete a task or add a pack → Quote Generator → edit the sample estimate and save → Pipeline Board → change its stage. Settings supports display-profile edits and theme changes. The demo banner remains visible throughout.
+
+All seven application screens are reachable from navigation. URLs preserve the selected page/opportunity through reload and Back/Forward. Desktop and mobile menus use the same routes. For screenshots, select the first opportunity and open its detail, task workflow, saved quote and pipeline. Browser-test captures are written to `test-results/audit-*.png`; [reviewed portfolio screenshots](docs/screenshots) are included in the repository.
+
+## Architecture
+
+```text
+User → shared React/TypeScript screens → typed service boundary
+                                      ├─ demo: local fixtures / sessionStorage
+                                      └─ hosted: Supabase → PostgreSQL / Edge Functions
+```
+
+- `components/screens/` owns interactions; `Stratus*` and `components/ui/` provide reusable design-system components.
+- `services/` selects a backend. `services/supabase/` keeps the real adapters; `demo/` implements the same operations locally. Supabase initialization is lazy, so demo mode needs no credentials.
+- `domain/` shares quote calculations, validation and deterministic priority scoring across modes. Quote edits use version checks to reject stale writes.
+- `supabase/migrations/` defines owner RLS, relationship constraints and authoritative quote/completion triggers. `supabase/functions/` validates caller identity and scoring/create input.
+- `types/database.ts` is generated from committed migrations with embedded Postgres; CI checks for drift.
+
+Stack: React 18, strict TypeScript, Vite, Tailwind CSS, Radix UI, Supabase JS, Deno, Vitest/Testing Library, PGlite and Playwright. See [backend setup and security](docs/BACKEND.md).
+
+## Real Supabase mode
+
+Copy `.env.example` to `.env.local`, provision the [backend](docs/BACKEND.md), and restart Vite:
 
 ```dotenv
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-publishable-or-legacy-anon-key
 ```
 
-Restart Vite after changes. These values are public in the browser bundle: **never use a service-role or secret key**. A URL/key alone does not provision a backend. Read [backend prerequisites](docs/BACKEND.md) before enabling real data. Missing or invalid configuration displays setup guidance.
+These variables are public browser configuration. Never use secret/service-role keys. Demo profile identity is fictional and never authorizes hosted requests. A missing configuration displays setup guidance with a link back to the demo.
 
-## Features and scope
-
-| Workflow | Current behavior |
-| --- | --- |
-| Design system | Gallery, semantic tokens, reusable cards/buttons/inputs/badges, themes and sample product layouts |
-| Authentication | Supabase email/password sign-in/sign-up, confirmation guidance and sign-out |
-| Opportunities | User-scoped reads, server-side search/status filters and pagination, record selection, creation form and CRUD service methods |
-| Task packs | Create packs and tasks for a selected opportunity; complete/reopen tasks |
-| Quotes | Add/remove/edit lines, cent-rounded totals, tax, notes and draft creation/editing with version conflict protection; browser print / Save PDF |
-| Pipeline | Six stages with persisted stage selectors and visible write failures |
-| Winnability | Tested deterministic prioritization heuristic and authenticated function with a recalculation control; not predictive or eligibility-verified |
-| Settings | Profile name/organization, theme and sign-out work; notification delivery and account administration remain planned |
-| Email, planner, identity | Showcase layouts or explicitly planned application pages |
-
-With a provisioned backend: sign in → create an opportunity → select it → create a task pack and tasks → complete tasks → save a quote → update the pipeline stage. No automatic feed ingestion exists.
-
-## Architecture
-
-```text
-src/
-  Entry.tsx                 Lazy showcase/app boundary and config gate
-  App.tsx                   Showcase navigation
-  AppRouter.tsx             Auth-gated app navigation and selected record
-  showcase/                 Individual sample screens
-  components/screens/       Application feature screens
-  components/ui/            Radix/shadcn-style primitives
-  components/Stratus*.tsx   Product UI components
-  domain/                   Pure quote, scoring and validation logic
-  services/                 Supabase adapters and column mapping
-  types/                    Domain interfaces
-  hooks/                    Shared authentication provider and cancellable resource loading
-  lib/                      Public config and Supabase client
-  styles/globals.css        Tailwind source and design tokens
-supabase/
-  migrations/              Schema, constraints, RLS and triggers
-  functions/               Deno entry points and testable handlers
-```
-
-Screens own interactions and loading/error states. Services own database calls and snake_case ↔ camelCase mapping. Pure domain functions own calculations and scoring. Shared UI preserves the existing design language. Tailwind compiles from token source, and showcase/app bundles load independently.
-
-Navigation stays lightweight: query parameters select the entry mode and URL hashes preserve workspace pages and selected opportunity IDs across reloads and browser Back/Forward. Invalid routes fall back to the dashboard. UI primitives remain as a reusable library even where a feature does not consume them.
-
-## Stack
-
-React 18, strict TypeScript, Vite with the React Babel plugin, Tailwind CSS 4, Radix UI, Lucide, Supabase JS, Deno function source, Vitest, React Testing Library and ESLint. No additional backend framework or infrastructure was introduced.
-
-## Testing and CI
+## Tests and CI
 
 ```sh
-npm run lint
-npm run db:types:check
-npm run typecheck
-npm test
-npm run build
-npm audit --audit-level=moderate
+npm run check                 # lint, strict types, unit/component/schema tests, build
+npm run db:types:check        # migration/type drift
 npx playwright install chromium
-npm run test:e2e
+npm run test:e2e              # real Chromium, including desktop/mobile demo flows
+npm audit --audit-level=moderate
 ```
 
-`npm run check` runs lint, typecheck, tests and build. `npm run test:watch` supports development; `npm run preview` serves the production `build/` directory.
+[GitHub Actions](.github/workflows/ci.yml) runs clean install, these checks and Deno checks for both Edge Function entry points. Demo browser tests use real local services and assert no backend calls; hosted-mode browser tests use explicit API fixtures. PGlite executes the actual migration and tests isolation/constraints. These tests do not prove hosted Auth, PostgREST or deployed function behavior.
 
-Tests cover rounding/invalid values, quote updates, mapping/server failures, task completion, scoring boundaries, handler authorization/validation/write failures, entry modes and rendered component behavior. Service responses are mocked; PGlite runs the actual SQL migration and checks ownership isolation, constraints and server calculations in embedded Postgres. Chromium tests exercise navigation, session fixtures, themes, quote conflict recovery and print layout. Hosted Auth/Data API integration remains unverified. Deno bootstrap validation is separate from browser typechecking.
+## Scope and portfolio relevance
 
-[GitHub Actions](.github/workflows/ci.yml) runs `npm ci`, lint, strict typecheck, tests, build and dependency audit on pushes and pull requests. The frontend job also verifies generated schema types and runs Chromium browser tests. A separate Deno job typechecks both Edge Function entry points.
+Working: opportunity creation/search/filtering/pagination, detail selection, task packs/completion, quote calculation/editing/printing, pipeline stage updates, profile/theme settings. Browser printing can save a PDF; no server PDF service exists. Priority scores are transparent heuristics, not win probabilities.
 
-## Project limitations
+Not implemented: automated ingestion, email/notification delivery, daily planning, account administration, unsaved-draft autosave and external integrations. These are explicitly described as future capabilities; inactive placeholder routes were removed. Demo storage is for disposable fictional data, and it does not reproduce all database/auth semantics.
 
-Hosted deployment remains pending by choice. Browser tests use explicit API fixtures and do not claim a live Supabase integration check. Future product features include server PDF delivery, notification delivery, email/planner/identity workflows and further visual polish in older showcase samples. Quotes are estimates, not an accounting system, with optimistic concurrency protecting saved edits. Unsaved drafts are not automatically persisted.
+Stratus One complements SignalSource and Opportunity Scout with frontend architecture, reusable components, typed service boundaries and tested workflow logic. The visual foundation originated in a **Figma component-library export**, then was refactored into a functional application architecture. Original provenance and third-party licenses remain in [Attributions](src/Attributions.md).
 
-Read [the audit](docs/AUDIT.md) and [backend review](docs/BACKEND.md) for findings, security assumptions, function deployment details and acceptance criteria.
-
-## Portfolio relevance
-
-Stratus One complements SignalSource and Opportunity Scout through **frontend application architecture**: reusable components, semantic tokens, typed service boundaries, workflow state, tested business rules and honest integration scoping. Present it as frontend engineering with a tested Supabase integration contract; do not claim a production deployment until verified.
-
-Suggested résumé description: “Refactored a React/TypeScript opportunity-workflow prototype into modular screens and reusable components; added tested quote calculations, Supabase service adapters, authenticated function handlers and automated quality checks.”
-
-## Attribution
-
-The visual foundation originated in a Figma component-library export. Original provenance and third-party license links are preserved in [Attributions](src/Attributions.md).
-
-Database types are generated reproducibly from committed migrations using embedded Postgres: run `npm run db:types` after a schema change. CI checks for drift. Dashboard and pipeline reads traverse API pages; the opportunity feed requests 24 records per page. Large-scale analytics and virtualization remain outside this portfolio scope.
+Study [Interview Notes](docs/INTERVIEW_NOTES.md) and the [UX audit](docs/UX_AUDIT.md) for the main design decisions, evidence and limitations.

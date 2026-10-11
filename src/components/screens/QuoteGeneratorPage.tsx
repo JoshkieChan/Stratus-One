@@ -61,8 +61,9 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
   };
 
   let subtotal = 0, taxAmount = 0, total = 0;
+  let lineTotals: number[] = [];
   let validationError = '';
-  try { ({ subtotal, taxAmount, total } = calculateQuote(lineItems, taxRate / 100)); }
+  try { ({ subtotal, taxAmount, total, lineTotals } = calculateQuote(lineItems, taxRate / 100)); }
   catch (error) { validationError = error instanceof Error ? error.message : 'Invalid quote'; }
 
   const handleSaveQuote = async () => {
@@ -96,10 +97,10 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
         <div>
           <h1 className="mb-2">Quote Generator</h1>
           <p className="text-[var(--color-fg-secondary)]">
-            Create professional quotes for your opportunities
+            Add a title and line items, or edit a saved quote below. Unsaved edits are discarded when you leave.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <StratusButton variant="secondary" disabled={Boolean(validationError) || lineItems.length === 0 || !quoteTitle.trim()} onClick={() => window.print()}>
             <Download className="w-4 h-4" />
             Print / Save PDF
@@ -126,7 +127,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <StratusInput
             label="Quote Title"
-            placeholder="Q1 2025 Professional Services"
+            placeholder="Professional services estimate"
             value={quoteTitle}
             onChange={(e) => setQuoteTitle(e.target.value)}
           />
@@ -158,6 +159,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
             <div key={item.id} className="flex gap-3 items-start flex-wrap">
               <div className="flex-1 min-w-[200px]">
                 <StratusInput
+                  label="Description"
                   placeholder="Description"
                   aria-label={`Description ${index + 1}`}
                   value={item.description}
@@ -167,6 +169,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
               <div className="w-24">
                 <StratusInput
                   type="number"
+                  label="Quantity"
                   placeholder="Qty"
                   aria-label={`Quantity ${index + 1}`}
                   min={0}
@@ -178,6 +181,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
               <div className="w-32">
                 <StratusInput
                   type="number"
+                  label="Unit price (USD)"
                   placeholder="Unit Price"
                   aria-label={`Unit price ${index + 1}`}
                   min={0}
@@ -187,7 +191,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
                 />
               </div>
               <div className="w-32 flex items-center h-[var(--input-height)]">
-                <p className="font-medium">{formatCurrency(item.total)}</p>
+                <p className="font-medium">{formatCurrency(lineTotals[index] ?? 0)}</p>
               </div>
               <button
                 onClick={() => handleRemoveLineItem(item.id)}
@@ -226,6 +230,7 @@ export function QuoteGeneratorPage({ opportunityId }: { opportunityId?: string }
       <StratusCard>
         <h3 className="mb-4">Additional Notes</h3>
         <textarea
+          aria-label="Additional notes"
           placeholder="Add any additional terms, conditions, or notes..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

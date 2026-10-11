@@ -7,9 +7,9 @@ const { query, client, responses } = vi.hoisted(() => {
   return { responses, query, client: { from: vi.fn(() => query), functions: { invoke: vi.fn() } } };
 });
 vi.mock('../lib/supabaseClient', () => ({ supabase: client }));
-import { QuoteService } from './QuoteService';
-import { TaskService } from './TaskService';
-import { OpportunityService } from './OpportunityService';
+import { QuoteService } from './supabase/QuoteService';
+import { TaskService } from './supabase/TaskService';
+import { OpportunityService } from './supabase/OpportunityService';
 const id = '11111111-1111-4111-8111-111111111111';
 beforeEach(() => { vi.clearAllMocks(); responses.length = 0; });
 it('maps opportunity columns and scopes the feed to a user', async () => {
@@ -37,10 +37,9 @@ it('preserves existing tax on line-only edits', async () => {
   await QuoteService.update(id, { lineItems: [{ description: 'Work', quantity: 1, unitPrice: 10, total: 0 }] }, 1);
   expect(query.update).toHaveBeenCalledWith(expect.objectContaining({ total: 11, tax_rate: 0.1 }));
 });
-it('rejects invalid quotes before writing and does not fake PDF generation', async () => {
+it('rejects invalid quotes before writing', async () => {
   await expect(QuoteService.create(id, { title: '', opportunityId: id, lineItems: [] })).rejects.toThrow();
   expect(query.insert).not.toHaveBeenCalled();
-  await expect(QuoteService.generatePDF(id)).rejects.toThrow('not implemented');
 });
 it('clears completion timestamps when a task is reopened', async () => {
   responses.push({ data: { id, completed_at: null, status: 'in_progress' }, error: null });

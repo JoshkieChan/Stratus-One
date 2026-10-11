@@ -21,7 +21,7 @@ export function OpportunityForm({ userId, onCreated, onCancel }: { userId: strin
         value: Number(fields.get('value')), deadline: `${text('deadline')}T23:59:59Z`,
       });
       onCreated(opportunity);
-    } catch { setError('Could not create the opportunity. Check the fields and backend setup, then retry.'); }
+    } catch { setError('Could not create the opportunity. Check the fields, then retry.'); }
     finally { setPending(false); }
   }
   return <StratusCard>

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-export const pages = ['dashboard','feed','taskpack','quotegen','pipeline','settings','email','planner','profile'] as const;
+export const pages = ['dashboard','feed','taskpack','quotegen','pipeline','settings','detail'] as const;
 export type PageRoute = typeof pages[number];
 export function parseRoute(hash: string): { page: PageRoute; opportunityId?: string } {
   const params = new URLSearchParams(hash.replace(/^#/, ''));
-  const candidate = params.get('page');
+  const requested = params.get('page');
+  const candidate = requested === 'profile' ? 'settings' : requested;
   const id = params.get('opportunity');
   return { page: pages.includes(candidate as PageRoute) ? candidate as PageRoute : 'dashboard',
     opportunityId: id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : undefined };
@@ -11,7 +12,7 @@ export function parseRoute(hash: string): { page: PageRoute; opportunityId?: str
 export function useWorkspaceRoute() {
   const [route, setRoute] = useState(() => parseRoute(window.location.hash));
   useEffect(() => {
-    const changed = () => setRoute(parseRoute(window.location.hash));
+    const changed = () => { if (window.location.hash !== '#workspace-main') setRoute(parseRoute(window.location.hash)); };
     window.addEventListener('hashchange', changed);
     return () => window.removeEventListener('hashchange', changed);
   }, []);

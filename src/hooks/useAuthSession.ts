@@ -58,5 +58,6 @@ export function useAuthSession() {
     signIn,
     signUp,
     signOut,
+    updateProfile: async (profile: { full_name: string; organization: string }) => { const { error } = await supabase.auth.updateUser({ data: profile }); return { error }; },
   };
 }

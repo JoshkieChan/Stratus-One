@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 test('showcase renders, calculates markup and retains theme after reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/?mode=showcase');
   await expect(page.getByRole('status')).toContainText('Design showcase');
   await page.getByRole('button', { name: 'Quote Generator', exact: true }).click();
   await page.getByLabel('Base Cost', { exact: true }).fill('100');

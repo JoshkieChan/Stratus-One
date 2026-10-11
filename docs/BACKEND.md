@@ -44,4 +44,8 @@ Before using real data, verify the complete flow on the target project with two 
 
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [function authorization](https://supabase.com/docs/guides/functions/auth).
 
-Profile updates store only display name and organization in Auth user metadata; these values are never used for authorization. Chromium tests intercept API calls with explicit fixtures, while embedded Postgres separately verifies database behavior. Hosted deployment remains pending at the user's request.
+Profile updates store only display name and organization in Auth user metadata; these values are never used for authorization. Hosted-mode Chromium tests intercept API calls with explicit fixtures; main demo tests use local adapters without backend calls. Embedded Postgres separately verifies database behavior. Hosted deployment remains pending at the user's request.
+
+## Portfolio demo boundary
+
+`/` and `?mode=demo` select `src/demo` adapters through typed service facades. They share UI, calculations and validation with the hosted app and keep saved changes in tab-scoped sessionStorage. `?mode=app` selects lazy Supabase adapters and the real Auth provider. Demo identities never authenticate hosted requests. The demo does not deploy functions, issue Supabase requests, or reproduce every database/auth semantic. Reset restores only local fictional data. The real migration is not seeded with demo data.

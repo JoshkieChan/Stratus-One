@@ -1,100 +1,26 @@
-import type { Database } from '../types/database';
-import { calculateQuote } from '../domain/quotes';
-import { requireTitle, requireId } from '../domain/validation';
-import { toRow, fromRow } from './mapping';
-import { supabase } from '../lib/supabaseClient';
-import type { Quote, QuoteCreateInput, QuoteUpdateInput } from '../types/quote';
+import { isDemoMode } from '../lib/mode';
+import type { QuoteService as Backend } from './supabase/QuoteService';
 
+/** Select storage at the boundary; both modes use the same screens and domain logic. */
 export class QuoteService {
-  static async getByOpportunity(opportunityId: string): Promise<Quote[]> {
-    const { data, error } = await supabase
-      .from('quotes')
-      .select('*')
-      .eq('opportunity_id', opportunityId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return (data || []).map(row => fromRow<Quote>(row));
+  static async getByOpportunity(...args: Parameters<typeof Backend.getByOpportunity>): ReturnType<typeof Backend.getByOpportunity> {
+    const service = isDemoMode() ? (await import('../demo/services')).QuoteService : (await import('./supabase/QuoteService')).QuoteService;
+    return service.getByOpportunity(...args);
   }
-
-  static async getById(id: string): Promise<Quote | null> {
-    const { data, error } = await supabase
-      .from('quotes')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    return data ? fromRow<Quote>(data) : null;
+  static async getById(...args: Parameters<typeof Backend.getById>): ReturnType<typeof Backend.getById> {
+    const service = isDemoMode() ? (await import('../demo/services')).QuoteService : (await import('./supabase/QuoteService')).QuoteService;
+    return service.getById(...args);
   }
-
-  static async create(userId: string, input: QuoteCreateInput): Promise<Quote> {
-    requireTitle(input.title);
-    requireId(input.opportunityId);
-    if (!input.lineItems.length) throw new Error('A saved quote requires at least one line item');
-    const taxRate = input.taxRate ?? 0;
-    const { subtotal, taxAmount, total, lineTotals } = calculateQuote(input.lineItems, taxRate);
-    const lineItems = input.lineItems.map((item, i) => ({ ...item, total: lineTotals[i] }));
-    const quoteNumber = 'Q-' + crypto.randomUUID();
-
-    const { data, error } = await supabase
-      .from('quotes')
-      .insert([{
-        ...toRow({ ...input, lineItems }),
-        user_id: userId,
-        quote_number: quoteNumber,
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount: taxAmount,
-        total,
-        status: 'draft',
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return fromRow<Quote>(data);
+  static async create(...args: Parameters<typeof Backend.create>): ReturnType<typeof Backend.create> {
+    const service = isDemoMode() ? (await import('../demo/services')).QuoteService : (await import('./supabase/QuoteService')).QuoteService;
+    return service.create(...args);
   }
-
-  static async update(id: string, input: QuoteUpdateInput, expectedVersion: number): Promise<Quote> {
-    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 1) throw new Error('A valid quote version is required');
-    if (input.title !== undefined) requireTitle(input.title);
-    if (input.opportunityId !== undefined) requireId(input.opportunityId);
-    const updateData: Database['public']['Tables']['quotes']['Update'] = toRow(input);
-    if (input.lineItems !== undefined || input.taxRate !== undefined) {
-      const existing = await this.getById(id);
-      if (!existing) throw new Error('Quote not found');
-      if (existing.version !== expectedVersion) throw new Error('Quote changed. Reload it before saving your edits.');
-      const items = input.lineItems ?? existing.lineItems;
-      if (!items.length) throw new Error('A saved quote requires at least one line item');
-      const taxRate = input.taxRate ?? existing.taxRate;
-      const { subtotal, taxAmount, total, lineTotals } = calculateQuote(items, taxRate);
-      Object.assign(updateData, { subtotal, tax_rate: taxRate, tax_amount: taxAmount, total, line_items: items.map((item, i) => ({ ...item, total: lineTotals[i] })) });
-    }
-
-    const { data, error } = await supabase
-      .from('quotes')
-      .update(updateData)
-      .eq('id', id)
-      .eq('version', expectedVersion)
-      .select()
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) throw new Error('Quote changed or is no longer accessible. Reload it before saving your edits.');
-    return fromRow<Quote>(data);
+  static async update(...args: Parameters<typeof Backend.update>): ReturnType<typeof Backend.update> {
+    const service = isDemoMode() ? (await import('../demo/services')).QuoteService : (await import('./supabase/QuoteService')).QuoteService;
+    return service.update(...args);
   }
-
-  static async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('quotes')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  }
-
-  static async generatePDF(_id: string): Promise<string> {
-    throw new Error('PDF generation is not implemented. No PDF service is deployed by this repository.');
+  static async delete(...args: Parameters<typeof Backend.delete>): ReturnType<typeof Backend.delete> {
+    const service = isDemoMode() ? (await import('../demo/services')).QuoteService : (await import('./supabase/QuoteService')).QuoteService;
+    return service.delete(...args);
   }
 }

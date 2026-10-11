@@ -34,7 +34,7 @@ export function PipelineBoardPage() {
       const data = await OpportunityService.getAll(user!.id);
       setOpportunities(data);
     } catch {
-      setError('Unable to load or save data. Check your connection and backend configuration, then reload.');
+      setError('Unable to load data. Please retry.');
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export function PipelineBoardPage() {
     { id: 'closed', title: 'Closed', status: 'closed' as const },
   ];
 
-  if (error) return <p role="alert">{error}</p>;
+  if (error) return <p role="alert">{error} <button className="underline" onClick={() => void loadOpportunities()}>Retry</button></p>;
 
   if (loading) {
     return (
@@ -69,7 +69,7 @@ export function PipelineBoardPage() {
       </div>
 
       {saveError && <p role="alert">{saveError}</p>}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 overflow-x-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {columns.map(column => (
           <PipelineColumn
             key={column.id}

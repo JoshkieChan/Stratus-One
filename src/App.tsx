@@ -183,12 +183,12 @@ export default function App() {
             <div className="flex items-center gap-3 flex-shrink-0">
               <ThemeToggle />
               <a href="https://github.com/JoshkieChan/Stratus-One#readme">Documentation</a>
-              <a href="?mode=app">Open application</a>
+              <a href="?mode=demo">Open application demo</a>
             </div>
           </div>
         </header>
 
-        <p role="status" className="p-4">Design showcase — sample data and illustrative controls; changes are not saved. Use Open application for Supabase workflows.</p>
+        <p role="status" className="p-4">Design showcase — sample data and illustrative controls; changes are not saved. Use Open application demo to try the real workspace with local fixtures.</p>
         {/* Content */}
         <main className="flex-1 p-4 sm:p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">

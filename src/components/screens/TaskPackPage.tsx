@@ -30,7 +30,7 @@ export function TaskPackPage({ opportunityId }: { opportunityId?: string }) {
     if (!opportunityId) return;
     setPending(true); setNotice('');
     try { await OpportunityService.calculateWinnability(opportunityId); refresh(); }
-    catch { setNotice('Scoring failed. Confirm that calculate-winnability is deployed, then retry.'); }
+    catch { setNotice('Priority could not be recalculated. Please retry; hosted mode also requires the scoring function to be deployed.'); }
     finally { setPending(false); }
   }
   if (!opportunityId) return <p>Select an opportunity in the feed to view its task packs.</p>;
@@ -39,7 +39,7 @@ export function TaskPackPage({ opportunityId }: { opportunityId?: string }) {
   if (!data?.opportunity) return <p role="alert">Opportunity not found or no longer accessible.</p>;
   const tasks = data.packs.flatMap(pack => pack.tasks);
   return <div className="flex flex-col gap-6">
-    <div><h1>{data.opportunity.title}</h1><p>{data.opportunity.description}</p></div>
+    <div><h1>Task workflow</h1><h2 className="mt-2">{data.opportunity.title}</h2><p>{data.opportunity.description}</p></div>
     <StratusCard>
       <h2>Task Packs</h2>
       <p>{tasks.filter(task => task.status === 'completed').length} of {tasks.length} tasks completed</p>

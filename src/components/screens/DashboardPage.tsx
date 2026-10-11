@@ -5,12 +5,12 @@ import { TaskService } from '../../services/TaskService';
 import { StratusCard } from '../StratusCard';
 import { StratusBadge } from '../StratusBadge';
 import { StratusButton } from '../StratusButton';
-import { TrendingUp, Target, CheckCircle, Clock, DollarSign } from 'lucide-react';
+import { Target, CheckCircle, Clock, DollarSign } from 'lucide-react';
 import type { Opportunity } from '../../types/opportunity';
 import type { Task } from '../../types/task';
 import { formatCurrency, formatDate } from '../../utils/format';
 
-export function DashboardPage() {
+export function DashboardPage({ onSelect, onBrowse }: { onSelect?: (id: string) => void; onBrowse?: () => void }) {
   const { user } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -30,7 +30,7 @@ export function DashboardPage() {
       setOpportunities(opps);
       setTasks(allTasks);
     } catch {
-      setError('Unable to load or save data. Check your connection and backend configuration, then reload.');
+      setError('Unable to load data. Please retry.');
     } finally {
       setLoading(false);
     }
@@ -44,11 +44,11 @@ export function DashboardPage() {
   };
 
   const upcomingDeadlines = opportunities
-    .filter(opp => opp.status === 'open' || opp.status === 'in_progress')
+    .filter(opp => (opp.status === 'open' || opp.status === 'in_progress') && Date.parse(opp.deadline) >= Date.now())
     .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
     .slice(0, 5);
 
-  if (error) return <p role="alert">{error}</p>;
+  if (error) return <p role="alert">{error} <button className="underline" onClick={() => void loadDashboardData()}>Retry</button></p>;
 
   if (loading) {
     return (
@@ -64,7 +64,7 @@ export function DashboardPage() {
       <div>
         <h1 className="mb-2">Daily Dashboard</h1>
         <p className="text-[var(--color-fg-secondary)]">
-          Your opportunity pipeline at a glance
+          Track opportunities from initial review through proposal tasks, quotes and pipeline decisions. Start with the Opportunity Feed.
         </p>
       </div>
 
@@ -78,7 +78,7 @@ export function DashboardPage() {
         />
         <StatCard
           icon={<DollarSign className="w-5 h-5" />}
-          label="Total Pipeline Value"
+          label="Recorded Opportunity Value"
           value={formatCurrency(stats.totalValue)}
           color="success"
         />
@@ -109,10 +109,10 @@ export function DashboardPage() {
                 {upcomingDeadlines.map(opp => (
                   <div
                     key={opp.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border-default)]"
+                    className="flex flex-wrap gap-4 items-center justify-between p-4 rounded-lg bg-[var(--color-bg-secondary)] border border-[var(--color-border-default)]"
                   >
                     <div className="flex-1">
-                      <p className="font-medium text-[var(--color-fg-primary)]">{opp.title}</p>
+                      <button className="font-medium text-left underline text-[var(--color-fg-primary)]" onClick={() => onSelect?.(opp.id)}>{opp.title}</button>
                       <p className="text-sm text-[var(--color-fg-secondary)]">{opp.agency}</p>
                     </div>
                     <div className="text-right">
@@ -133,22 +133,9 @@ export function DashboardPage() {
         {/* Quick Actions */}
         <div>
           <StratusCard>
-            <h3 className="mb-4">Quick Actions (planned)</h3>
-            <div className="flex flex-col gap-3">
-              <StratusButton disabled variant="primary" fullWidth>
-                <TrendingUp className="w-4 h-4" />
-                New Opportunity
-              </StratusButton>
-              <StratusButton disabled variant="secondary" fullWidth>
-                Create Task Pack
-              </StratusButton>
-              <StratusButton disabled variant="secondary" fullWidth>
-                Generate Quote
-              </StratusButton>
-              <StratusButton disabled variant="ghost" fullWidth>
-                View All Tasks
-              </StratusButton>
-            </div>
+            <h3 className="mb-4">Review a proposal workflow</h3>
+            <ol className="list-decimal ml-5 flex flex-col gap-3 mb-5"><li>Choose or create an opportunity.</li><li>Organize its proposal tasks.</li><li>Prepare a quote and update the pipeline stage.</li></ol>
+            <StratusButton onClick={onBrowse} fullWidth>Browse opportunities</StratusButton>
           </StratusCard>
         </div>
       </div>

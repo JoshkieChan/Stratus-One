@@ -23,7 +23,7 @@ export function OpportunityCard({
   onClick
 }: OpportunityCardProps) {
   return (
-    <StratusCard className="flex flex-col gap-4 max-w-[380px]">
+    <StratusCard className="flex flex-col gap-4 min-w-0">
       <div className="flex items-start justify-between">
         <h3 className="flex-1 pr-2">{title}</h3>
         <StratusBadge variant={scoreVariant}>
@@ -31,10 +31,10 @@ export function OpportunityCard({
         </StratusBadge>
       </div>
 
-      <div className="flex items-center gap-4 text-[var(--color-fg-secondary)]">
+      <div className="flex flex-wrap items-center gap-4 text-[var(--color-fg-secondary)]">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
-          <span className="text-sm">{deadline}</span>
+          <span className="text-sm">{Number.isNaN(Date.parse(deadline)) ? deadline : new Date(deadline).toLocaleDateString()}</span>
         </div>
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4" />
@@ -43,7 +43,7 @@ export function OpportunityCard({
       </div>
 
       <div className="bg-[var(--color-bg-secondary)] rounded-lg p-4">
-        <p className="text-sm text-[var(--color-fg-primary)] mb-1">Priority assessment</p>
+        <p className="text-sm text-[var(--color-fg-primary)] mb-1">Summary</p>
         <p className="text-sm text-[var(--color-fg-secondary)]">{reasoning}</p>
       </div>
 

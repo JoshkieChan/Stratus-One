@@ -10,7 +10,8 @@ test('demo workflow persists locally, resets, and never contacts a backend', asy
   await page.getByRole('button', { name: 'Open opportunity', exact: true }).first().click();
   await expect(page.getByRole('heading', { name: 'Community website accessibility audit' })).toBeVisible();
   await page.getByRole('button', { name: 'Open task workflow' }).click();
-  await page.getByLabel('Complete Confirm delivery milestones').check();
+  // Completion is controlled by the asynchronous service response, not the native click.
+  await page.getByLabel('Complete Confirm delivery milestones').click();
   await expect(page.getByLabel('Complete Confirm delivery milestones')).toBeChecked();
   await page.reload();
   await expect(page.getByLabel('Complete Confirm delivery milestones')).toBeChecked();
